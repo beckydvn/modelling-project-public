@@ -11,6 +11,7 @@ d = Var('d') # document
 r = Var('r') # 🚧 
 h = Var('h') # holiday
 a = Var('a') # accident
+m = Var('m') #money
 f = Var('f') # failed to generate a trip with a reasonable time (fail model)
 c = Var('c') # 🚗 
 b = Var('b') # 🚌  
