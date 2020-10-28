@@ -9,7 +9,7 @@ c = Var('c')
 x = Var('x')
 y = Var('y')
 z = Var('z')
-
+ 
 
 #
 # Build an example full theory for your setting and return it.
