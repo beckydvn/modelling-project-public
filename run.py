@@ -5,7 +5,7 @@ from lib204 import Encoding
 # Call your variables whatever you want
 x = Var('x') # 🌞 
 y = Var('y') # rainy
-z = Var('z') # snowy
+z = Var('z') # snow storm
 v = Var('v') # 🦠 
 d = Var('d') # document
 r = Var('r') # 🚧 
@@ -16,19 +16,16 @@ c = Var('c') # 🚗
 b = Var('b') # 🚌  
 t = Var('t') # 🚂 
 p = Var('p') # 🛩 
-f = Var('f') # ⛴
 
-kingston_start = Var('kingston_start') # Starting in Kingston
-kingston_end = Var('kingston_end') # Ending in Kingston
-scranton_start = Var('washingston_start') # Starting in Washington D.C
-scranton_end = Var('washington_end') # Ending in Washington D.C
+ottawa_start = Var('ottawa_start') # Starting in Ottawa  
+ottawa_end = Var('ottawa_end') # Ending in Ottawa
+scranton_start = Var('scranton_start') # Starting in Scranton
+scranton_end = Var('scranton_end') # Ending in Scranton
 toronto_start = Var('toronto_start') # Starting in Toronto
 toronto_end = Var('toronto_end') # Ending in Toronto
-baltimore_start = Var('ny_start') # Starting in New York
-baltimore_end = Var('ny_end') # Ending in New York
+baltimore_start = Var('baltimore_start') # Starting in Baltimore
+baltimore_end = Var('baltimore_end') # Ending in Baltimore
  
-
-#
 # Build an example full theory for your setting and return it.
 #
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
