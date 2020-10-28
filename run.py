@@ -3,12 +3,29 @@ from nnf import Var
 from lib204 import Encoding
 
 # Call your variables whatever you want
-a = Var('a')
-b = Var('b')
-c = Var('c')
-x = Var('x')
-y = Var('y')
-z = Var('z')
+x = Var('x') # 🌞 
+y = Var('y') # rainy
+z = Var('z') # snowy
+v = Var('v') # 🦠 
+d = Var('d') # document
+r = Var('r') # 🚧 
+h = Var('h') # holiday
+a = Var('a') # accident
+u = Var('u') # unreasonable time (fail model)
+c = Var('c') # 🚗 
+b = Var('b') # 🚌  
+t = Var('t') # 🚂 
+p = Var('p') # 🛩 
+f = Var('f') # ⛴
+
+kingston_start = Var('kingston_start') # Starting in Kingston
+kingston_end = Var('kingston_end') # Ending in Kingston
+scranton_start = Var('washingston_start') # Starting in Washington D.C
+scranton_end = Var('washington_end') # Ending in Washington D.C
+toronto_start = Var('toronto_start') # Starting in Toronto
+toronto_end = Var('toronto_end') # Ending in Toronto
+baltimore_start = Var('ny_start') # Starting in New York
+baltimore_end = Var('ny_end') # Ending in New York
  
 
 #
