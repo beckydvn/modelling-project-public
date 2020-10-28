@@ -37,3 +37,5 @@ if __name__ == "__main__":
     for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
         print(" %s: %.2f" % (vn, T.likelihood(v)))
     print()
+    
+    
