@@ -1,8 +1,10 @@
-
 from nnf import Var
 from lib204 import Encoding
 from nnf import true
 from nnf import false
+
+#TEST
+test1 = Var('test2')
 
 # Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
@@ -44,14 +46,14 @@ def example_theory():
     toll = Var('toll')
      
     #also need to add a constraint that you can only have one start and one end...
-    E.add_constraint(~toronto_start | ~(ottawa_start | scranton_start | baltimore_start))
-    E.add_constraint(~ottawa_start | ~(toronto_start | scranton_start | baltimore_start))
-    E.add_constraint(~scranton_start | ~(ottawa_start | toronto_start | baltimore_start))
-    E.add_constraint(~baltimore_start | ~(ottawa_start | scranton_start | toronto_start))
-    E.add_constraint(~toronto_end | ~(ottawa_end | scranton_end | baltimore_end))
-    E.add_constraint(~ottawa_end | ~(toronto_end | scranton_end | baltimore_end))
-    E.add_constraint(~scranton_end | ~(ottawa_end | toronto_end | baltimore_end))
-    E.add_constraint(~baltimore_end | ~(ottawa_end | scranton_end | toronto_end))
+    E.add_constraint(~toronto_start | (ottawa_start | scranton_start | baltimore_start).negate())
+    E.add_constraint(~ottawa_start | (toronto_start | scranton_start | baltimore_start).negate())
+    E.add_constraint(~scranton_start | (ottawa_start | toronto_start | baltimore_start).negate())
+    E.add_constraint(~baltimore_start | (ottawa_start | scranton_start | toronto_start).negate())
+    E.add_constraint(~toronto_end | (ottawa_end | scranton_end | baltimore_end).negate())
+    E.add_constraint(~ottawa_end | (toronto_end | scranton_end | baltimore_end).negate())
+    E.add_constraint(~scranton_end | (ottawa_end | toronto_end | baltimore_end).negate())
+    E.add_constraint(~baltimore_end | (ottawa_end | scranton_end | toronto_end).negate())
     
     if(((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) | ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))):
       international = true
@@ -65,29 +67,29 @@ def example_theory():
     E.add_constraint(iff(snowstorm, ~sunny))
     
     #good weather and holiday implies tickets will be sold out and you have to drive
-    E.add_constraint(~(sunny & holiday) | ~(transit | plane))
+    E.add_constraint((sunny & holiday).negate() | (transit | plane).negate())
     #rainy or snowstorm increases the likelihood of accidents
-    E.add_constraint(~(rainy | snowstorm) | accident)
+    E.add_constraint((rainy | snowstorm).negate() | accident)
     #snowstorm implies that transit and planes will be shut down
-    E.add_constraint(~snowstorm | ~(transit | plane))
+    E.add_constraint(~snowstorm | (transit | plane).negate())
     #if you have tested positive for the virus/been in contact, you can't cross the border
     E.add_constraint(~virus | ~documents)
     #no documents means you can't cross the border
-    E.add_constraint(~(~documents & international) | fail)
+    E.add_constraint((~documents & international).negate() | fail)
     
     #driving constraints (come into play if they are driving):
     #bad weather and roadwork implies unfeasible trip
-    E.add_constraint(~(((rainy | snowstorm) & roadwork) & drive) | fail)
+    E.add_constraint((((rainy | snowstorm) & roadwork) & drive).negate() | fail)
     #bad weather and holiday implies unfeasible trip
-    E.add_constraint(~(((rainy | snowstorm) & holiday) & drive) | fail)
+    E.add_constraint((((rainy | snowstorm) & holiday) & drive).negate() | fail)
     #roadwork and holiday implies unfeasible trip
-    E.add_constraint(~((roadwork & holiday) & drive) | fail)
+    E.add_constraint(((roadwork & holiday) & drive).negate() | fail)
     #roadwork and accident implies unfeasible trip
-    E.add_constraint(~((roadwork & accident) & drive) | fail)
+    E.add_constraint(((roadwork & accident) & drive).negate() | fail)
     #holiday and accident implies unfeasible trip
-    E.add_constraint(~((holiday & accident) & drive) | fail)
+    E.add_constraint(((holiday & accident) & drive).negate() | fail)
     #tolls and no money implies unfeasible trip
-    E.add_constraint(~((toll & ~money) & drive) | fail)
+    E.add_constraint(((toll & ~money) & drive).negate() | fail)
 
     return E
 
@@ -105,6 +107,3 @@ if __name__ == "__main__":
         print(" %s: %.2f" % (vn, T.likelihood(v)))
     print()
     """
-    
-    
-
