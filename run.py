@@ -4,6 +4,8 @@ from lib204 import Encoding
 from nnf import true
 from nnf import false
 
+#TEST
+
 # Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
 rainy = Var('rainy') # rainy
