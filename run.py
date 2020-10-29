@@ -1,4 +1,3 @@
-
 from nnf import Var
 from lib204 import Encoding
 from nnf import true
@@ -108,6 +107,3 @@ if __name__ == "__main__":
         print(" %s: %.2f" % (vn, T.likelihood(v)))
     print()
     """
-    
-    
-
