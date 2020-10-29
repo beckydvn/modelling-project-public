@@ -5,6 +5,7 @@ from nnf import true
 from nnf import false
 
 #TEST
+test = Var('test')
 
 # Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
