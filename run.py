@@ -54,7 +54,9 @@ def example_theory():
     E.add_constraint(~ottawa_end | (toronto_end | scranton_end | baltimore_end).negate())
     E.add_constraint(~scranton_end | (ottawa_end | toronto_end | baltimore_end).negate())
     E.add_constraint(~baltimore_end | (ottawa_end | scranton_end | toronto_end).negate())
-    
+    E.add_constraint(toronto_start | ottawa_start | scranton_start | baltimore_start)
+    E.add_constraint(toronto_end | ottawa_end | scranton_end | baltimore_end)
+
     if(((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) | ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))):
       international = true
     else:
@@ -65,6 +67,7 @@ def example_theory():
     E.add_constraint(iff(rainy, ~sunny))
     E.add_constraint(iff(sunny, ~snowstorm))
     E.add_constraint(iff(snowstorm, ~sunny))
+    
     
     #good weather and holiday implies tickets will be sold out and you have to drive
     E.add_constraint((sunny & holiday).negate() | (transit | plane).negate())
@@ -90,6 +93,8 @@ def example_theory():
     E.add_constraint(((holiday & accident) & drive).negate() | fail)
     #tolls and no money implies unfeasible trip
     E.add_constraint(((toll & ~money) & drive).negate() | fail)
+    E.add_constraint((plane | transit | drive) | fail)
+    E.add_constraint(~fail)
 
     return E
 
