@@ -33,6 +33,7 @@ baltimore_end = Var('baltimore_end') # Ending in Baltimore
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 
+# read in a database of cities from a specific country and write it to a list of dictionaries
 def read_files(country, filename):
   file1 = open(filename, "r")
   test = open("testing.txt","w")
@@ -61,10 +62,11 @@ def read_files(country, filename):
   file1.close()
   return country
     
-
+# if and only if
 def iff(left, right):
   return (left.negate() | right) & (right.negate() | left)
 
+# calculate the distance between two locations using latitudes and longtitudes
 def calcdistance(coord1, coord2):
   return geopy.distance.distance(coord1, coord2).km 
 
@@ -122,16 +124,18 @@ if __name__ == "__main__":
     canada = read_files("canada", "Canada Cities.csv")
     america = read_files("america", "US Cities.csv")
 
+    # create a list for canadian and american cities
     canada_cities = []
+    america_cities = []
     for entry in canada:
       canada_cities.append(entry["city"].lower())
-      america_cities = []
     for entry in america:
       america_cities.append(entry["city"].lower())    
 
     start = ""
     end = ""
     inputOK = False
+    # loop until the cities entered are valid and ready to be used for calculation
     while(not inputOK):
       start = input("Please enter your starting city and country, separated by a comma.")
       end = input("Please enter your ending city and country, separated by a comma.")
@@ -153,7 +157,7 @@ if __name__ == "__main__":
       else:
         inputOK = True
 
-
+    # checking if the trip is international or not (from Canada to USA and vice versa)
     if((start_city in canada_cities and end_city in america_cities) or (start_city in america_cities and end_city in canada_cities)):
       print("here")
       T.add_constraint(international)
