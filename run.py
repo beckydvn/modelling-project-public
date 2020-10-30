@@ -43,7 +43,7 @@ def read_files(country, filename):
     timezone = splitline[4].strip("\n")
     entry = {}
     entry["city"] = city
-    entry["province"] = province
+    entry["province/state"] = province
     entry["latitude"] = latitude
     entry["longitude"] = longitude
     entry["timezone"] = timezone
@@ -109,14 +109,15 @@ def example_theory():
     coord1 = (52.2296756, 21.0122287)
     coord2 = (52.406374, 16.9251681)"""
 
-def location_input(canada_cities, america_cities):
+def raw_location_input(canada_cities, america_cities):
     start = ""
     end = ""
     inputOK = False
     # loop until the cities entered are valid and ready to be used for calculation
     while(not inputOK):
-      start = input("Please enter your starting city and country, separated by a comma:")
-      end = input("Please enter your ending city and country, separated by a comma:")
+      print("When entering your cities, you can only travel to and from Canada and the United States.")
+      start = input("Please enter your starting city, province/state, and country, separated by (just) a comma:")
+      end = input("Please enter your ending city, province/state, and country, separated by a comma:")
       start_city = start.split(",")[0].lower()
       start_country = start.split(",")[1].lower()
       end_city = end.split(",")[0].lower()
@@ -128,14 +129,66 @@ def location_input(canada_cities, america_cities):
       america_cities) or (end_city not in canada_cities and end_city
       not in america_cities)):
         print("You must start and end in a city in Canada or the United States.")
-      elif(start_country not in ["canada","america","united states", 
-      "snited states of america", "usa"] or end_country not in ["canada","america","united states", 
-      "united states of america", "usa"]):
+      elif(start_country not in ["canada", "united states"] or end_country not in ["canada", "united states"]):
         print("The country you enter must be in Canada or the United States.")
       else:
         inputOK = True
 
+    return {"starting city":start_city, "starting country": start_country, "ending city": end_city,
+    "ending country": end_country}
+
+def clarify_duplicates(canada, america, raw_location):
+    duplicates_start = []
+    duplicates_end = []
+
+    raw_start_city = raw_location["starting city"]
+    raw_start_country = raw_location["starting country"]
+    raw_end_city = raw_location["ending city"]
+    raw_end_country = raw_location["ending country"]
+
+    if(raw_start_country == "canada"):
+      for entry in canada:
+        if(entry["city"].lower() == raw_start_city):
+          duplicates_start.append(entry)
+    else:
+      for entry in america:
+        if(entry["city"].lower() == raw_start_city):
+          duplicates_start.append(entry)
+    if(raw_end_country == "united states"):
+      for entry in america:
+        if(entry["city"].lower() == raw_end_city):
+          duplicates_end.append(entry)
+    else:
+      for entry in canada:
+        if(entry["city"].lower() == raw_end_city):
+          duplicates_end.append(entry)
+
+    if(len(duplicates_start) == 1):
+      start_city = duplicates_start[0]
+    else:
+      print("Please enter the number beside the starting city you are referring to.") 
+      for i in range(len(duplicates_start)):
+        print(i)
+        for value in duplicates_start[i].values():
+          print(value)
+        print("\n")
+      choice = int(input("Enter your choice:"))
+      start_city = duplicates_start[choice]
+
+    if(len(duplicates_end) == 1):
+      end_city = duplicates_end[0]
+    else:
+      print("Please enter the number beside the destination city you are referring to.") 
+      for i in range(len(duplicates_end)):
+        print(i)
+        for value in duplicates_end[i].values():
+          print(value)
+        print("\n")
+      choice = int(input("Enter your choice:"))
+      end_city = duplicates_end[choice]
+
     return start_city, end_city
+
 
 
 def get_international(start_city, end_city, canada_cities, america_cities):
@@ -161,16 +214,23 @@ if __name__ == "__main__":
       america_cities.append(entry["city"].lower())    
     T = example_theory()
 
-    result = location_input(canada_cities,america_cities)
-    start = result[0]
-    end = result[1]
+    raw_location = raw_location_input(canada_cities,america_cities)
+    start_city, end_city = clarify_duplicates(canada, america, raw_location)
+    start_country = raw_location["starting country"]
+    end_country = raw_location["ending country"]
 
+    print(start_city)
+    print(end_city)
+    
+
+
+    """
     start_info = []
     end_info = []
     for entry in canada:
       if(entry["city"].lower() == start):
         start_info.append(entry)
-
+    
 
     border = get_international(start, end, canada_cities, america_cities)
     if(border):
@@ -185,7 +245,7 @@ if __name__ == "__main__":
     else:
       trips = 1
 
-    
+    """
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
