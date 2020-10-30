@@ -43,26 +43,22 @@ def read_files(country, filename):
     line = file.readline()
     if(line == ""):
       break
+    line = line.strip("\ufeff")
     splitline = line.split(",")
+    #print(splitline)
     cityname = splitline[0]
     province = splitline[1]
     latitude = splitline[2]
     longitude = splitline[3]
-    timezone = splitline[4]
+    timezone = splitline[4].strip("\n")
     country[cityname] = {}
     country[cityname]["province"] = province
     country[cityname]["latitude"] = latitude
     country[cityname]["longitude"] = longitude
     country[cityname]["timezone"] = timezone
+    #print(timezone)
   return country
     
-  #while()
-
-
-
-
-
-
 
 def iff(left, right):
   return (left.negate() | right) & (right.negate() | left)
@@ -73,6 +69,8 @@ def calcdistance(coord1, coord2):
 def example_theory():
     E = Encoding()
 
+
+    """
     #also need to add a constraint that you can only have one start and one end...
     E.add_constraint(~toronto_start | (ottawa_start | scranton_start | baltimore_start).negate())
     E.add_constraint(~ottawa_start | (toronto_start | scranton_start | baltimore_start).negate())
@@ -89,10 +87,7 @@ def example_theory():
     E.add_constraint(~ottawa_start | ~ottawa_end)
     E.add_constraint(~scranton_start | ~scranton_end)
     E.add_constraint(~baltimore_start | ~baltimore_end)
-
-    #international variable can only be true if you are travelling from america to canada/vice versa
-    E.add_constraint(iff((((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) |
-     ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))), international))
+    """
 
     #make sure weather is valid
     E.add_constraint(iff(sunny, ~rainy))
@@ -131,29 +126,77 @@ def example_theory():
 
     return E
 
-
-if __name__ == "__main__":
-    
-    canada = read_files("canada", "Canada Cities.csv")
-    america = read_files("america", "US Cities.csv")
-    for x in america:
+def testing():
+    for x in canada:
         print (x)
-        for y in america[x]:
-            print (y,':',america[x][y])
+        for y in canada[x]:
+            print (y,':',canada[x][y])
 
     coord1 = (52.2296756, 21.0122287)
     coord2 = (52.406374, 16.9251681)
-    print(calcdistance(coord1, coord2))
+
+if __name__ == "__main__":
+
     T = example_theory()
-    T.add_constraint(toronto_start)
-    T.add_constraint(baltimore_end)
+    canada = read_files("canada", "Canada Cities.csv")
+    #print(canada.keys())
+    
+
+    america = read_files("america", "US Cities.csv")
+    #testing()
+    #for key in america.keys():
+    #  print(key)
+    #print(america.keys())
+    start = ""
+    end = ""
+    inputOK = False
+    while(not inputOK):
+      start = input("Please enter your starting city and country, separated by a comma.")
+      end = input("Please enter your ending city and country, separated by a comma.")
+      start_city = start.split(",")[0]
+      start_country = start.split(",")[1]
+      end_city = end.split(",")[0]
+      end_country = end.split(",")[1]
+
+      print(start_city)
+      print(start_country)
+      print(end_city)
+      print(end_country)
+
+      if(start_city.lower() == end_city.lower() and start_country == end_country):
+        print("Your starting and ending city can't be the same.")
+      elif((start_city.capitalize() not in canada.keys() and start_city.capitalize() not in
+      america.keys()) or (end_city.capitalize() not in canada.keys() and end_city.capitalize()
+      not in america.keys())):
+        print(start_city.capitalize() in canada.keys())
+        print(end_city.capitalize() in america.keys())
+        print("You must start and end in a city in Canada or the United States.")
+      elif(start_country.capitalize() not in ["Canada","America","United States", 
+      "United States of America", "USA"] or end_country.capitalize() not in ["Canada","America","United States", 
+      "United States of America", "USA"]):
+        print("The country you enter must be in Canada or the United States.")
+      else:
+        inputOK = True
+
+
+
+    #for city in canada:
+      #if(city == start):
+
+
+    if(((start in canada.keys()) and (end in america.keys())) or ((start in america.keys()) and (end in canada.keys()))):
+      print("here")
+      T.add_constraint(international)
+    else:
+      T.add_constraint(~international)
+
+    
+
+    """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
     print("   Solution: %s" % T.solve())
-    #for i in range(3):
-    #T = example_theory()
-    #print()
-    """"
+    
     print("\nVariable likelihoods:")
     for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
         print(" %s: %.2f" % (vn, T.likelihood(v)))
