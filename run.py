@@ -109,18 +109,7 @@ def example_theory():
     coord1 = (52.2296756, 21.0122287)
     coord2 = (52.406374, 16.9251681)"""
 
-def location_input():
-    canada = read_files("canada", "Canada Cities.csv")
-    america = read_files("america", "US Cities.csv")
-
-    # create a list for canadian and american cities
-    canada_cities = []
-    america_cities = []
-    for entry in canada:
-      canada_cities.append(entry["city"].lower())
-    for entry in america:
-      america_cities.append(entry["city"].lower())    
-
+def location_input(canada_cities, america_cities):
     start = ""
     end = ""
     inputOK = False
@@ -159,10 +148,26 @@ def get_international(start_city, end_city, canada_cities, america_cities):
     return border
 
 if __name__ == "__main__":
+
+    canada = read_files("canada", "Canada Cities.csv")
+    america = read_files("america", "US Cities.csv")
+
+    # create a list for canadian and american cities
+    canada_cities = []
+    america_cities = []
+    for entry in canada:
+      canada_cities.append(entry["city"].lower())
+    for entry in america:
+      america_cities.append(entry["city"].lower())    
     T = example_theory()
 
-    border = get_international()
+    result = location_input(canada_cities,america_cities)
+    start = result[0]
+    end = result[1]
+
+    border = get_international(start, end, canada_cities, america_cities)
     if(border):
+      print("here")
       T.add_constraint(international)
     else:
       T.add_constraint(~international)
