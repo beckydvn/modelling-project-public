@@ -18,15 +18,6 @@ plane = Var('plane') # 🛩
 international = Var('international') # crossing the border
 toll = Var('toll') # 30-min delay
 
-ottawa_start = Var('ottawa_start') # Starting in Ottawa  
-ottawa_end = Var('ottawa_end') # Ending in Ottawa
-scranton_start = Var('scranton_start') # Starting in Scranton
-scranton_end = Var('scranton_end') # Ending in Scranton
-toronto_start = Var('toronto_start') # Starting in Toronto
-toronto_end = Var('toronto_end') # Ending in Toronto
-baltimore_start = Var('baltimore_start') # Starting in Baltimore
-baltimore_end = Var('baltimore_end') # Ending in Baltimore
-
 # Build an example full theory for your setting and return it.
 #
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
@@ -36,7 +27,6 @@ baltimore_end = Var('baltimore_end') # Ending in Baltimore
 # read in a database of cities from a specific country and write it to a list of dictionaries
 def read_files(country, filename):
   file1 = open(filename, "r")
-  test = open("testing.txt","w")
   country = []
   line = "."
   while(line != ""):
@@ -67,7 +57,7 @@ def iff(left, right):
   return (left.negate() | right) & (right.negate() | left)
 
 # calculate the distance between two locations using latitudes and longtitudes
-def calcdistance(coord1, coord2):
+def calc_distance(coord1, coord2):
   return geopy.distance.distance(coord1, coord2).km 
 
 def example_theory():
@@ -110,17 +100,16 @@ def example_theory():
 
     return E
 
-def testing():
+"""def testing():
     for x in canada:
         print (x)
         for y in canada[x]:
             print (y,':',canada[x][y])
 
     coord1 = (52.2296756, 21.0122287)
-    coord2 = (52.406374, 16.9251681)
+    coord2 = (52.406374, 16.9251681)"""
 
-if __name__ == "__main__":
-    T = example_theory()
+def location_input():
     canada = read_files("canada", "Canada Cities.csv")
     america = read_files("america", "US Cities.csv")
 
@@ -137,8 +126,8 @@ if __name__ == "__main__":
     inputOK = False
     # loop until the cities entered are valid and ready to be used for calculation
     while(not inputOK):
-      start = input("Please enter your starting city and country, separated by a comma.")
-      end = input("Please enter your ending city and country, separated by a comma.")
+      start = input("Please enter your starting city and country, separated by a comma:")
+      end = input("Please enter your ending city and country, separated by a comma:")
       start_city = start.split(",")[0].lower()
       start_country = start.split(",")[1].lower()
       end_city = end.split(",")[0].lower()
@@ -157,15 +146,27 @@ if __name__ == "__main__":
       else:
         inputOK = True
 
+    return start_city, end_city
+
+
+def get_international(start_city, end_city, canada_cities, america_cities):
     # checking if the trip is international or not (from Canada to USA and vice versa)
     if((start_city in canada_cities and end_city in america_cities) or (start_city in america_cities and end_city in canada_cities)):
-      print("here")
+      border = True
+    else:
+      border = False
+
+    return border
+
+if __name__ == "__main__":
+    T = example_theory()
+
+    border = get_international()
+    if(border):
       T.add_constraint(international)
     else:
       T.add_constraint(~international)
-
-    
-
+  
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
