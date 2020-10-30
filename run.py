@@ -1,10 +1,5 @@
 from nnf import Var
 from lib204 import Encoding
-from nnf import true
-from nnf import false
-
-#TEST
-newtest = Var("newtest")
 
 # Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
@@ -16,6 +11,12 @@ roadwork = Var('roadwork') # 🚧 0.75-hour delay
 holiday = Var('holiday') # holiday 1.25-hour delay
 accident = Var('accident') # accident 1.5-hour delay
 money = Var('money') # money
+
+drive = Var('drive') # 🚗 
+transit = Var('transit') # transit 
+plane = Var('plane') # 🛩    
+international = Var('international') # crossing the border
+toll = Var('toll') # 30-min delay
 
 ottawa_start = Var('ottawa_start') # Starting in Ottawa  
 ottawa_end = Var('ottawa_end') # Ending in Ottawa
@@ -38,11 +39,7 @@ def iff(left, right):
   
 def example_theory():
     E = Encoding()
-    drive = Var('drive') # 🚗 
-    transit = Var('transit') # transit 
-    plane = Var('plane') # 🛩    
-    international = Var('international') # crossing the border
-    toll = Var('toll') # 30-min delay
+
      
     #also need to add a constraint that you can only have one start and one end...
     E.add_constraint(~toronto_start | (ottawa_start | scranton_start | baltimore_start).negate())
@@ -61,10 +58,9 @@ def example_theory():
     E.add_constraint(~scranton_start | ~scranton_end)
     E.add_constraint(~baltimore_start | ~baltimore_end)
 
-    if(((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) | ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))):
-      international = true
-    else:
-      international = false
+    #international variable can only be true if you are travelling from america to canada/vice versa
+    E.add_constraint( iff((((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) |
+     ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))), international))
 
     #make sure weather is valid
     E.add_constraint(iff(sunny, ~rainy))
@@ -82,9 +78,9 @@ def example_theory():
 
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
-    E.add_constraint(international.negate() | (~virus & documents))
+    E.add_constraint(~international | (~virus & documents))
     #no documents means you can't cross the border
-    E.add_constraint((international & documents) | international.negate())
+    E.add_constraint((international & documents) | ~international)
 
     #driving constraints (come into play if they are driving):
     #bad weather and roadwork implies unfeasible trip
