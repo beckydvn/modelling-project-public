@@ -1,5 +1,7 @@
 from nnf import Var
 from lib204 import Encoding
+import geopy.distance
+
 
 # Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
@@ -27,7 +29,6 @@ toronto_end = Var('toronto_end') # Ending in Toronto
 baltimore_start = Var('baltimore_start') # Starting in Baltimore
 baltimore_end = Var('baltimore_end') # Ending in Baltimore
 
- #hello2
 # Build an example full theory for your setting and return it.
 #
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
@@ -36,11 +37,14 @@ baltimore_end = Var('baltimore_end') # Ending in Baltimore
 
 def iff(left, right):
   return (left.negate() | right) & (right.negate() | left)
+
+def calcdistance(coord1, coord2):
+  return geopy.distance.distance(coord1, coord2).km
+
   
 def example_theory():
     E = Encoding()
 
-     
     #also need to add a constraint that you can only have one start and one end...
     E.add_constraint(~toronto_start | (ottawa_start | scranton_start | baltimore_start).negate())
     E.add_constraint(~ottawa_start | (toronto_start | scranton_start | baltimore_start).negate())
@@ -59,7 +63,7 @@ def example_theory():
     E.add_constraint(~baltimore_start | ~baltimore_end)
 
     #international variable can only be true if you are travelling from america to canada/vice versa
-    E.add_constraint( iff((((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) |
+    E.add_constraint(iff((((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) |
      ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))), international))
 
     #make sure weather is valid
@@ -101,10 +105,12 @@ def example_theory():
 
 
 if __name__ == "__main__":
-
+    coord1 = (52.2296756, 21.0122287)
+    coord2 = (52.406374, 16.9251681)
+    print(calcdistance(coord1, coord2))
     T = example_theory()
     T.add_constraint(toronto_start)
-    T.add_constraint(ottawa_end)
+    T.add_constraint(baltimore_end)
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
     print("   Solution: %s" % T.solve())
