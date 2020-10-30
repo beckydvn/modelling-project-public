@@ -29,6 +29,12 @@ toronto_end = Var('toronto_end') # Ending in Toronto
 baltimore_start = Var('baltimore_start') # Starting in Baltimore
 baltimore_end = Var('baltimore_end') # Ending in Baltimore
 
+cities = {}
+cities["toronto"] = (43.6532, 79.3832)
+cities["ottawa"] = (45.4215, 75.6972)
+cities["scranton"] = (41.4090, 75.6624)
+cities["baltimore"] = (39.2904, 76.6122)
+
 # Build an example full theory for your setting and return it.
 #
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
@@ -41,6 +47,8 @@ def iff(left, right):
 def calcdistance(coord1, coord2):
   return geopy.distance.distance(coord1, coord2).km
 
+def determineCountry():
+  if
   
 def example_theory():
     E = Encoding()
@@ -108,6 +116,7 @@ if __name__ == "__main__":
     coord1 = (52.2296756, 21.0122287)
     coord2 = (52.406374, 16.9251681)
     print(calcdistance(coord1, coord2))
+    print(cities)
     T = example_theory()
     T.add_constraint(toronto_start)
     T.add_constraint(baltimore_end)
