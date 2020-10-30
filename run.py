@@ -165,13 +165,28 @@ if __name__ == "__main__":
     start = result[0]
     end = result[1]
 
+    start_info = []
+    end_info = []
+    for entry in canada:
+      if(entry["city"].lower() == start):
+        start_info.append(entry)
+
+
     border = get_international(start, end, canada_cities, america_cities)
     if(border):
-      print("here")
       T.add_constraint(international)
     else:
       T.add_constraint(~international)
   
+    print("A trip from " + start + " to " + end +" will take " + calc_distance())
+    want_to_stop = input("Would you like to take any stops along the way? Enter (y/n):")
+    if(input == "y"):
+      trips = int(input("How many stops would you like to take?"))
+    else:
+      trips = 1
+
+    
+
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
