@@ -16,8 +16,6 @@ roadwork = Var('roadwork') # 🚧 0.75-hour delay
 holiday = Var('holiday') # holiday 1.25-hour delay
 accident = Var('accident') # accident 1.5-hour delay
 money = Var('money') # money
-fail = Var('fail') # failed to generate a trip with a reasonable time (fail model)
-
 
 ottawa_start = Var('ottawa_start') # Starting in Ottawa  
 ottawa_end = Var('ottawa_end') # Ending in Ottawa
@@ -79,23 +77,22 @@ def example_theory():
     #if you have tested positive for the virus/been in contact, you can't cross the border
     E.add_constraint(~virus | ~documents)
     #no documents means you can't cross the border
-    E.add_constraint((~documents & international).negate() | fail)
-    
+    E.add_constraint((international & documents) | international.negate())
+
     #driving constraints (come into play if they are driving):
     #bad weather and roadwork implies unfeasible trip
-    E.add_constraint((((rainy | snowstorm) & roadwork) & drive).negate() | fail)
+    E.add_constraint((((rainy | snowstorm) & roadwork) & drive).negate())
     #bad weather and holiday implies unfeasible trip
-    E.add_constraint((((rainy | snowstorm) & holiday) & drive).negate() | fail)
+    E.add_constraint((((rainy | snowstorm) & holiday) & drive).negate())
     #roadwork and holiday implies unfeasible trip
-    E.add_constraint(((roadwork & holiday) & drive).negate() | fail)
+    E.add_constraint(((roadwork & holiday) & drive).negate())
     #roadwork and accident implies unfeasible trip
-    E.add_constraint(((roadwork & accident) & drive).negate() | fail)
+    E.add_constraint(((roadwork & accident) & drive).negate())
     #holiday and accident implies unfeasible trip
-    E.add_constraint(((holiday & accident) & drive).negate() | fail)
+    E.add_constraint(((holiday & accident) & drive).negate())
     #tolls and no money implies unfeasible trip
     #E.add_constraint(((toll & ~money) & drive).negate() | fail)
-    E.add_constraint((plane | transit | drive) | fail)
-    E.add_constraint(~fail)
+    E.add_constraint(plane | transit | drive)
 
     return E
 
