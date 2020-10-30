@@ -55,6 +55,11 @@ def example_theory():
     E.add_constraint(~baltimore_end | (ottawa_end | scranton_end | toronto_end).negate())
     E.add_constraint(toronto_start | ottawa_start | scranton_start | baltimore_start)
     E.add_constraint(toronto_end | ottawa_end | scranton_end | baltimore_end)
+    #adds constraints that you can't start and end in the same city
+    E.add_constraint(~toronto_start | ~toronto_end)
+    E.add_constraint(~ottawa_start | ~ottawa_end)
+    E.add_constraint(~scranton_start | ~scranton_end)
+    E.add_constraint(~baltimore_start | ~baltimore_end)
 
     if(((toronto_start | ottawa_start) & (scranton_end | baltimore_end)) | ((toronto_end | ottawa_end) & (scranton_start | baltimore_start))):
       international = true
@@ -74,8 +79,10 @@ def example_theory():
     E.add_constraint((rainy | snowstorm).negate() | accident)
     #snowstorm implies that transit and planes will be shut down
     E.add_constraint(~snowstorm | (transit | plane).negate())
+
+    #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
-    E.add_constraint(~virus | ~documents)
+    E.add_constraint(international.negate() | (~virus & documents))
     #no documents means you can't cross the border
     E.add_constraint((international & documents) | international.negate())
 
@@ -100,10 +107,14 @@ def example_theory():
 if __name__ == "__main__":
 
     T = example_theory()
-
+    T.add_constraint(toronto_start)
+    T.add_constraint(ottawa_end)
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
     print("   Solution: %s" % T.solve())
+    #for i in range(3):
+    #T = example_theory()
+    #print()
     """"
     print("\nVariable likelihoods:")
     for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
