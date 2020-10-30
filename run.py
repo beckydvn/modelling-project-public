@@ -116,8 +116,8 @@ def raw_location_input(canada_cities, america_cities):
     # loop until the cities entered are valid and ready to be used for calculation
     while(not inputOK):
       print("When entering your cities, you can only travel to and from Canada and the United States.")
-      start = input("Please enter your starting city, province/state, and country, separated by (just) a comma:")
-      end = input("Please enter your ending city, province/state, and country, separated by a comma:")
+      start = input("Please enter your starting city, and country, separated by (just) a comma:")
+      end = input("Please enter your ending city, and country, separated by a comma:")
       start_city = start.split(",")[0].lower()
       start_country = start.split(",")[1].lower()
       end_city = end.split(",")[0].lower()
@@ -221,31 +221,30 @@ if __name__ == "__main__":
 
     print(start_city)
     print(end_city)
-    
 
-
-    """
-    start_info = []
-    end_info = []
-    for entry in canada:
-      if(entry["city"].lower() == start):
-        start_info.append(entry)
-    
-
-    border = get_international(start, end, canada_cities, america_cities)
+    border = get_international(start_city, end_city, canada_cities, america_cities)
     if(border):
       T.add_constraint(international)
+      print("here")
     else:
       T.add_constraint(~international)
   
-    print("A trip from " + start + " to " + end +" will take " + calc_distance())
+    start_coord = (start_city["latitude"], start_city["longitude"])
+    end_coord = (end_city["latitude"], end_city["longitude"])
+    total_dist = calc_distance(start_coord, end_coord)
+
+    print("A trip from " + start_city["city"] + ", " + start_city["province/state"] + " to " + end_city["city"]
+     + ", " + end_city["province/state"] + " is " + str(total_dist)+ " km long.")
     want_to_stop = input("Would you like to take any stops along the way? Enter (y/n):")
     if(input == "y"):
       trips = int(input("How many stops would you like to take?"))
     else:
       trips = 1
 
-    """
+    
+    
+
+    
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
