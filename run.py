@@ -2,8 +2,6 @@ from nnf import Var
 from lib204 import Encoding
 import geopy.distance
 
-
-# Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
 rainy = Var('rainy') # rainy 1-hour delay
 snowstorm = Var('snowstorm') # snow storm 2-hour delay
@@ -39,8 +37,6 @@ def read_files(country, filename):
   file1 = open(filename, "r")
   test = open("testing.txt","w")
   country = []
-  namelist = []
-  keylist = []
   line = "."
   while(line != ""):
     line = file1.readline()
@@ -48,7 +44,6 @@ def read_files(country, filename):
       break
     line = line.strip("\ufeff")
     splitline = line.split(",")
-    #print(splitline)
 
     city = splitline[0]
     province = splitline[1]
@@ -61,29 +56,9 @@ def read_files(country, filename):
     entry["latitude"] = latitude
     entry["longitude"] = longitude
     entry["timezone"] = timezone
-
     country.append(entry)
 
-    namelist.append(city)
-    #print(cityname)
-    #test.write(cityname + "\n")
-
-  for item in country:
-      keylist.append(item["city"])
-
-    #test.write(str(item))
-    #test.write("\n")
-    #test.write(key + "\n")
-
-  """
-  for i in range(len(namelist)):
-    print(namelist[i] + " " + keylist[i])
-    if(namelist[i] != keylist[i]):
-      break
-  """
-  #print(country["LLoydminster"])
   file1.close()
-  #test.close()
   return country
     
 
@@ -95,26 +70,6 @@ def calcdistance(coord1, coord2):
 
 def example_theory():
     E = Encoding()
-
-
-    """
-    #also need to add a constraint that you can only have one start and one end...
-    E.add_constraint(~toronto_start | (ottawa_start | scranton_start | baltimore_start).negate())
-    E.add_constraint(~ottawa_start | (toronto_start | scranton_start | baltimore_start).negate())
-    E.add_constraint(~scranton_start | (ottawa_start | toronto_start | baltimore_start).negate())
-    E.add_constraint(~baltimore_start | (ottawa_start | scranton_start | toronto_start).negate())
-    E.add_constraint(~toronto_end | (ottawa_end | scranton_end | baltimore_end).negate())
-    E.add_constraint(~ottawa_end | (toronto_end | scranton_end | baltimore_end).negate())
-    E.add_constraint(~scranton_end | (ottawa_end | toronto_end | baltimore_end).negate())
-    E.add_constraint(~baltimore_end | (ottawa_end | scranton_end | toronto_end).negate())
-    E.add_constraint(toronto_start | ottawa_start | scranton_start | baltimore_start)
-    E.add_constraint(toronto_end | ottawa_end | scranton_end | baltimore_end)
-    #adds constraints that you can't start and end in the same city
-    E.add_constraint(~toronto_start | ~toronto_end)
-    E.add_constraint(~ottawa_start | ~ottawa_end)
-    E.add_constraint(~scranton_start | ~scranton_end)
-    E.add_constraint(~baltimore_start | ~baltimore_end)
-    """
 
     #make sure weather is valid
     E.add_constraint(iff(sunny, ~rainy))
@@ -163,36 +118,16 @@ def testing():
     coord2 = (52.406374, 16.9251681)
 
 if __name__ == "__main__":
-
-
-
     T = example_theory()
     canada = read_files("canada", "Canada Cities.csv")
-    #print(canada.keys())
-    
-
     america = read_files("america", "US Cities.csv")
 
-    
-
-
-    #for key in america:
-    #  print(key["city"])
-    #print(america.keys())
     canada_cities = []
     for entry in canada:
       canada_cities.append(entry["city"].lower())
       america_cities = []
     for entry in america:
       america_cities.append(entry["city"].lower())    
-    #print(canada_cities)
-
-    #print(america_cities)
-    file = open("test2.txt", "w")
-    for key in america_cities:
-      file.write(str(key))
-      file.write("\n")
-    file.close()
 
     start = ""
     end = ""
