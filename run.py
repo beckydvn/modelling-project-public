@@ -8,13 +8,13 @@ newtest = Var("newtest")
 
 # Call your variables whatever you want
 sunny = Var('sunny') # 🌞 
-rainy = Var('rainy') # rainy
-snowstorm = Var('snowstorm') # snow storm
+rainy = Var('rainy') # rainy 1-hour delay
+snowstorm = Var('snowstorm') # snow storm 2-hour delay
 virus = Var('virus') # 🦠 
 documents = Var('documents') # document
-roadwork = Var('roadwork') # 🚧 
-holiday = Var('holiday') # holiday
-accident = Var('accident') # accident
+roadwork = Var('roadwork') # 🚧 0.75-hour delay
+holiday = Var('holiday') # holiday 1.25-hour delay
+accident = Var('accident') # accident 1.5-hour delay
 money = Var('money') # money
 fail = Var('fail') # failed to generate a trip with a reasonable time (fail model)
 
@@ -43,7 +43,7 @@ def example_theory():
     transit = Var('transit') # transit 
     plane = Var('plane') # 🛩    
     international = Var('international') # crossing the border
-    toll = Var('toll')
+    toll = Var('toll') # 30-min delay
      
     #also need to add a constraint that you can only have one start and one end...
     E.add_constraint(~toronto_start | (ottawa_start | scranton_start | baltimore_start).negate())
@@ -92,7 +92,7 @@ def example_theory():
     #holiday and accident implies unfeasible trip
     E.add_constraint(((holiday & accident) & drive).negate() | fail)
     #tolls and no money implies unfeasible trip
-    E.add_constraint(((toll & ~money) & drive).negate() | fail)
+    #E.add_constraint(((toll & ~money) & drive).negate() | fail)
     E.add_constraint((plane | transit | drive) | fail)
     E.add_constraint(~fail)
 
