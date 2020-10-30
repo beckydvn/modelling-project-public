@@ -36,27 +36,54 @@ baltimore_end = Var('baltimore_end') # Ending in Baltimore
 #  what the expectations are.
 
 def read_files(country, filename):
-  file = open(filename, "r")
-  country = {}
+  file1 = open(filename, "r")
+  test = open("testing.txt","w")
+  country = []
+  namelist = []
+  keylist = []
   line = "."
   while(line != ""):
-    line = file.readline()
+    line = file1.readline()
     if(line == ""):
       break
     line = line.strip("\ufeff")
     splitline = line.split(",")
     #print(splitline)
-    cityname = splitline[0]
+
+    city = splitline[0]
     province = splitline[1]
     latitude = splitline[2]
     longitude = splitline[3]
     timezone = splitline[4].strip("\n")
-    country[cityname] = {}
-    country[cityname]["province"] = province
-    country[cityname]["latitude"] = latitude
-    country[cityname]["longitude"] = longitude
-    country[cityname]["timezone"] = timezone
-    #print(timezone)
+    entry = {}
+    entry["city"] = city
+    entry["province"] = province
+    entry["latitude"] = latitude
+    entry["longitude"] = longitude
+    entry["timezone"] = timezone
+
+    country.append(entry)
+
+    namelist.append(city)
+    #print(cityname)
+    #test.write(cityname + "\n")
+
+  for item in country:
+      keylist.append(item["city"])
+
+    #test.write(str(item))
+    #test.write("\n")
+    #test.write(key + "\n")
+
+  """
+  for i in range(len(namelist)):
+    print(namelist[i] + " " + keylist[i])
+    if(namelist[i] != keylist[i]):
+      break
+  """
+  #print(country["LLoydminster"])
+  file1.close()
+  #test.close()
   return country
     
 
@@ -137,54 +164,62 @@ def testing():
 
 if __name__ == "__main__":
 
+
+
     T = example_theory()
     canada = read_files("canada", "Canada Cities.csv")
     #print(canada.keys())
     
 
     america = read_files("america", "US Cities.csv")
-    #testing()
-    #for key in america.keys():
-    #  print(key)
+
+    
+
+
+    #for key in america:
+    #  print(key["city"])
     #print(america.keys())
+    canada_cities = []
+    for entry in canada:
+      canada_cities.append(entry["city"].lower())
+      america_cities = []
+    for entry in america:
+      america_cities.append(entry["city"].lower())    
+    #print(canada_cities)
+
+    #print(america_cities)
+    file = open("test2.txt", "w")
+    for key in america_cities:
+      file.write(str(key))
+      file.write("\n")
+    file.close()
+
     start = ""
     end = ""
     inputOK = False
     while(not inputOK):
       start = input("Please enter your starting city and country, separated by a comma.")
       end = input("Please enter your ending city and country, separated by a comma.")
-      start_city = start.split(",")[0]
-      start_country = start.split(",")[1]
-      end_city = end.split(",")[0]
-      end_country = end.split(",")[1]
+      start_city = start.split(",")[0].lower()
+      start_country = start.split(",")[1].lower()
+      end_city = end.split(",")[0].lower()
+      end_country = end.split(",")[1].lower()
 
-      print(start_city)
-      print(start_country)
-      print(end_city)
-      print(end_country)
-
-      if(start_city.lower() == end_city.lower() and start_country == end_country):
+      if(start_city == end_city and start_country == end_country):
         print("Your starting and ending city can't be the same.")
-      elif((start_city.capitalize() not in canada.keys() and start_city.capitalize() not in
-      america.keys()) or (end_city.capitalize() not in canada.keys() and end_city.capitalize()
-      not in america.keys())):
-        print(start_city.capitalize() in canada.keys())
-        print(end_city.capitalize() in america.keys())
+      elif((start_city not in canada_cities and start_city not in
+      america_cities) or (end_city not in canada_cities and end_city
+      not in america_cities)):
         print("You must start and end in a city in Canada or the United States.")
-      elif(start_country.capitalize() not in ["Canada","America","United States", 
-      "United States of America", "USA"] or end_country.capitalize() not in ["Canada","America","United States", 
-      "United States of America", "USA"]):
+      elif(start_country not in ["canada","america","united states", 
+      "snited states of america", "usa"] or end_country not in ["canada","america","united states", 
+      "united states of america", "usa"]):
         print("The country you enter must be in Canada or the United States.")
       else:
         inputOK = True
 
 
-
-    #for city in canada:
-      #if(city == start):
-
-
-    if(((start in canada.keys()) and (end in america.keys())) or ((start in america.keys()) and (end in canada.keys()))):
+    if((start_city in canada_cities and end_city in america_cities) or (start_city in america_cities and end_city in canada_cities)):
       print("here")
       T.add_constraint(international)
     else:
@@ -202,3 +237,4 @@ if __name__ == "__main__":
         print(" %s: %.2f" % (vn, T.likelihood(v)))
     print()
     """
+    
