@@ -29,27 +29,47 @@ toronto_end = Var('toronto_end') # Ending in Toronto
 baltimore_start = Var('baltimore_start') # Starting in Baltimore
 baltimore_end = Var('baltimore_end') # Ending in Baltimore
 
-cities = {}
-cities["toronto"] = (43.6532, 79.3832)
-cities["ottawa"] = (45.4215, 75.6972)
-cities["scranton"] = (41.4090, 75.6624)
-cities["baltimore"] = (39.2904, 76.6122)
-
 # Build an example full theory for your setting and return it.
 #
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 
+def read_files(country, filename):
+  file = open(filename, "r")
+  country = {}
+  line = "."
+  while(line != ""):
+    line = file.readline()
+    if(line == ""):
+      break
+    splitline = line.split(",")
+    cityname = splitline[0]
+    province = splitline[1]
+    latitude = splitline[2]
+    longitude = splitline[3]
+    timezone = splitline[4]
+    country[cityname] = {}
+    country[cityname]["province"] = province
+    country[cityname]["latitude"] = latitude
+    country[cityname]["longitude"] = longitude
+    country[cityname]["timezone"] = timezone
+  return country
+    
+  #while()
+
+
+
+
+
+
+
 def iff(left, right):
   return (left.negate() | right) & (right.negate() | left)
 
 def calcdistance(coord1, coord2):
-  return geopy.distance.distance(coord1, coord2).km
+  return geopy.distance.distance(coord1, coord2).km 
 
-def determineCountry():
-  if
-  
 def example_theory():
     E = Encoding()
 
@@ -113,10 +133,17 @@ def example_theory():
 
 
 if __name__ == "__main__":
+    
+    canada = read_files("canada", "Canada Cities.csv")
+    america = read_files("america", "US Cities.csv")
+    for x in america:
+        print (x)
+        for y in america[x]:
+            print (y,':',america[x][y])
+
     coord1 = (52.2296756, 21.0122287)
     coord2 = (52.406374, 16.9251681)
     print(calcdistance(coord1, coord2))
-    print(cities)
     T = example_theory()
     T.add_constraint(toronto_start)
     T.add_constraint(baltimore_end)
