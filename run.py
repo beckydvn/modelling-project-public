@@ -303,6 +303,8 @@ if __name__ == "__main__":
     end_coord = (end_city["latitude"], end_city["longitude"])
     total_dist = calc_distance(start_coord, end_coord)
 
+    print(str(start_coord) + " " + str(end_coord))
+
     #tell the user the total number of km
     print("A trip from " + start_city["city"] + ", " + start_city["province/state"] + " to " + end_city["city"]
      + ", " + end_city["province/state"] + " is " + str(total_dist)+ " km long.")
@@ -318,8 +320,9 @@ if __name__ == "__main__":
     final_bearing = back_azimuth - 180
 
     #Define the starting and ending points.
-    start = geopy.Point(start_city["latitude"], start_city["longitude"])
+    temp_start = geopy.Point(start_city["latitude"], start_city["longitude"])
     end = geopy.Point(end_city["latitude"], end_city["longitude"])
+    start = temp_start
 
     #Define a general distance object, initialized with a distance of the stop distance (in km).
     d = geopy.distance.distance(kilometers=next_dist)
@@ -338,9 +341,9 @@ if __name__ == "__main__":
       #finds the next point from the starting point given the bearing
       #if we are closer to the start, use our initial bearing; otherwise, use the final bearing
       if(i < 5):
-        final = d.destination(point=start, bearing=fwd_azimuth)
+        final = d.destination(point=temp_start, bearing=fwd_azimuth)
       else:
-        final = d.destination(point=start, bearing=final_bearing)
+        final = d.destination(point=temp_start, bearing=final_bearing)
        
       #finds the location 
       location = geolocator.reverse(str(final))
@@ -348,7 +351,7 @@ if __name__ == "__main__":
       #add it to the list of all stops
       all_stops.append({"location":str(location),"coord":final})
       #reset the next starting point
-      start = final
+      temp_start = final
 
     #add the starting location to the chosen stops
     chosen_stops.append({"location": start_city["city"], "coord": start})
@@ -367,6 +370,8 @@ if __name__ == "__main__":
     
     for i in range(len(chosen_stops) - 1):
       #calculate the distance between each stop
+      print(chosen_stops[i]["coord"])
+      print(chosen_stops[i+1]["coord"])
       distance = calc_distance(chosen_stops[i]["coord"], chosen_stops[i + 1]["coord"])
       print("The distance between " + str(chosen_stops[i]["location"]) + " and " + 
       str(chosen_stops[i + 1]["location"]) + " is " + str(distance) + "km. ")
