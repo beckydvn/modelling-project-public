@@ -202,6 +202,28 @@ def get_international(start_city, end_city, canada_cities, america_cities):
 
     return border
 
+def calc_time(distance, mode):
+    if(mode == "car"):
+      speed = 80.0
+    elif(mode == "transit"):
+      speed = 200.0
+    elif(mode == "plane"):
+      speed = 850.0
+    return distance / speed
+
+def determine_travel_modes(drive_time, transit_time, plane_time):
+    travel = {}
+    if(drive_time < 24):
+        travel["drive"] = drive_time
+    if(transit_time < 10):
+        travel["transit"] = transit_time
+    if(plane_time > 2):
+        travel["plane"] = plane_time
+    return travel
+
+
+
+
 if __name__ == "__main__":
 
     canada = read_files("canada", "Canada Cities.csv")
@@ -294,15 +316,28 @@ if __name__ == "__main__":
     for i in range(len(chosen_stops) - 1):
       distance = calc_distance(chosen_stops[i]["coord"], chosen_stops[i + 1]["coord"])
       print("The distance between " + str(chosen_stops[i]["location"]) + " and " + 
-      str(chosen_stops[i + 1]["location"]) + " is " + str(distance))
+      str(chosen_stops[i + 1]["location"]) + " is " + str(distance) + "km. ")
 
       dict_string = str(chosen_stops[i]["location"]) + " to " + str(chosen_stops[i+1]["location"])
       print(dict_string)
-      entry = {dict_string : distance}
+      entry = {"location": dict_string, "distance" : distance}
       stop_distance.append(entry)
 
+    for i in range(len(stop_distance)):
+      distance = stop_distance[i]["distance"]
+      drive_time = calc_time(distance, "car")
+      transit_time = calc_time(distance, "transit")
+      plane_time = calc_time(distance, "plane")
+      travel = determine_travel_modes(drive_time, transit_time, plane_time)
+      stop_distance[i]["travel"] = travel
+
+    for i in range(len(stop_distance)):
+      print(str(stop_distance[i]))
+
     for entry in stop_distance:
-      print(entry) 
+      if "car" in entry["travel"].keys():
+        T.add_constraint(~drive[0] & ~transit[0])
+    
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
