@@ -1,6 +1,8 @@
 from nnf import Var
 from lib204 import Encoding
+import geopy
 import geopy.distance
+from geopy.geocoders import Nominatim
 import pyproj
 
 sunny = Var('sunny') # 🌞 
@@ -260,7 +262,10 @@ if __name__ == "__main__":
     # Use the `destination` method with a bearing of 0 degrees (which is north)
     # in order to go from point `start` 1 km to north.
     final = d.destination(point=start, bearing=fwd_azimuth)
-    print(str(final))
+
+    geolocator = Nominatim(user_agent="Bing")
+    location = geolocator.reverse(str(final))
+    print(location)
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
