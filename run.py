@@ -5,21 +5,42 @@ import geopy.distance
 from geopy.geocoders import Nominatim
 import pyproj
 
+
+virus = Var('virus') # 🦠 
+documents = Var('documents') # document
+international = Var('international') # crossing the border
+money = Var('money') # money
+holiday = Var('holiday') # holiday 1.25-hour delay
+
+
+
 sunny = Var('sunny') # 🌞 
 rainy = Var('rainy') # rainy 1-hour delay
 snowstorm = Var('snowstorm') # snow storm 2-hour delay
-virus = Var('virus') # 🦠 
-documents = Var('documents') # document
 roadwork = Var('roadwork') # 🚧 0.75-hour delay
-holiday = Var('holiday') # holiday 1.25-hour delay
 accident = Var('accident') # accident 1.5-hour delay
-money = Var('money') # money
-
+toll = Var('toll') # 30-min delay
+"""
 drive = Var('drive') # 🚗 
 transit = Var('transit') # transit 
-plane = Var('plane') # 🛩    
-international = Var('international') # crossing the border
-toll = Var('toll') # 30-min delay
+plane = Var('plane') # 🛩  
+"""
+
+"""
+#sunny = {"Toronto to Ottawa": proposition, "Ottawa to Scranton": proposition}
+sunny = {}
+rainy = {}
+snowstorm = {}
+roadwork = {}
+accident = {}
+toll = {}
+"""
+drive = {}
+transit = {}
+plane = {}
+
+
+
 
 # Build an example full theory for your setting and return it.
 #
@@ -72,13 +93,18 @@ def example_theory():
     E.add_constraint(iff(sunny, ~snowstorm))
     E.add_constraint(iff(snowstorm, ~sunny))
     
-    
+    """
     #good weather and holiday implies tickets will be sold out and you have to drive
     E.add_constraint((sunny & holiday).negate() | (transit | plane).negate())
+    """
+
     #rainy or snowstorm increases the likelihood of accidents
     E.add_constraint((rainy | snowstorm).negate() | accident)
+
+    """
     #snowstorm implies that transit and planes will be shut down
     E.add_constraint(~snowstorm | (transit | plane).negate())
+    """
 
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
@@ -86,6 +112,7 @@ def example_theory():
     #no documents means you can't cross the border
     E.add_constraint((international & documents) | ~international)
 
+    """
     #driving constraints (come into play if they are driving):
     #bad weather and roadwork implies unfeasible trip
     E.add_constraint((((rainy | snowstorm) & roadwork) & drive).negate())
@@ -98,8 +125,13 @@ def example_theory():
     #holiday and accident implies unfeasible trip
     E.add_constraint(((holiday & accident) & drive).negate())
     #tolls and no money implies unfeasible trip
-    #E.add_constraint(((toll & ~money) & drive).negate() | fail)
+
+    #tentative
+    E.add_constraint(((toll & ~money) & drive).negate())
+
+    #you must have at least one form of travel
     E.add_constraint(plane | transit | drive)
+    """
 
     return E
 
@@ -203,7 +235,7 @@ def get_international(start_city, end_city, canada_cities, america_cities):
     return border
 
 def calc_time(distance, mode):
-    if(mode == "car"):
+    if(mode == "drive"):
       speed = 80.0
     elif(mode == "transit"):
       speed = 200.0
@@ -225,7 +257,6 @@ def determine_travel_modes(drive_time, transit_time, plane_time):
 
 
 if __name__ == "__main__":
-
     canada = read_files("canada", "Canada Cities.csv")
     america = read_files("america", "US Cities.csv")
 
@@ -240,8 +271,6 @@ if __name__ == "__main__":
 
     raw_location = raw_location_input(canada_cities,america_cities)
     start_city, end_city = clarify_duplicates(canada, america, raw_location)
-    #print(start_city)
-    #clearprint(end_city)
     start_country = raw_location["starting country"]
     end_country = raw_location["ending country"]
 
@@ -264,8 +293,6 @@ if __name__ == "__main__":
     geodesic = pyproj.Geod(ellps='WGS84')
     #calculates the initial bearing (fwd_azimuth)
     fwd_azimuth,back_azimuth,distance = geodesic.inv(start_city["longitude"], start_city["latitude"], end_city["longitude"], end_city["latitude"])
-    print("initial bearing: " + str(fwd_azimuth))
-    print("final bearing: " + str(back_azimuth - 180))
     final_bearing = back_azimuth - 180
 
     # Define starting point.
@@ -324,8 +351,12 @@ if __name__ == "__main__":
       stop_distance.append(entry)
 
     for i in range(len(stop_distance)):
+      drive[stop_distance[i]["location"]] = Var('drive' + str(i))
+      transit[stop_distance[i]["location"]] = Var('transit' + str(i))
+      plane[stop_distance[i]["location"]] = Var('plane' + str(i))
+      
       distance = stop_distance[i]["distance"]
-      drive_time = calc_time(distance, "car")
+      drive_time = calc_time(distance, "drive")
       transit_time = calc_time(distance, "transit")
       plane_time = calc_time(distance, "plane")
       travel = determine_travel_modes(drive_time, transit_time, plane_time)
@@ -335,15 +366,30 @@ if __name__ == "__main__":
       print(str(stop_distance[i]))
 
     for entry in stop_distance:
-      if "car" in entry["travel"].keys():
-        T.add_constraint(~drive[0] & ~transit[0])
+      print(entry["travel"].keys())
+      if "drive" in entry["travel"].keys():
+        T.add_constraint(drive[entry["location"]])
+      else:
+        T.add_constraint(~drive[entry["location"]])
+      if "transit" in entry["travel"].keys():
+        T.add_constraint(transit[entry["location"]])
+      else:
+        T.add_constraint(~transit[entry["location"]])
+      if "plane" in entry["travel"].keys():
+        T.add_constraint(plane[entry["location"]])
+      else:
+        T.add_constraint(~plane[entry["location"]])
+      
+
+
+        
     
 
-    """"
+    
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
     print("   Solution: %s" % T.solve())
-    
+    """
     print("\nVariable likelihoods:")
     for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
         print(" %s: %.2f" % (vn, T.likelihood(v)))
