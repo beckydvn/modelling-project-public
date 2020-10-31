@@ -16,10 +16,10 @@ sunny = Var('sunny') # 🌞
 rainy = Var('rainy') # rainy 1-hour delay
 snowstorm = Var('snowstorm') # snow storm 2-hour delay
 
+"""
 roadwork = Var('roadwork') # 🚧 0.75-hour delay
 accident = Var('accident') # accident 1.5-hour delay
 toll = Var('toll') # 30-min delay
-"""
 drive = Var('drive') # 🚗 
 transit = Var('transit') # transit 
 plane = Var('plane') # 🛩  
@@ -30,11 +30,11 @@ plane = Var('plane') # 🛩
 sunny = {}
 rainy = {}
 snowstorm = {}
+"""
 
 roadwork = {}
 accident = {}
 toll = {}
-"""
 drive = {}
 transit = {}
 plane = {}
@@ -216,19 +216,35 @@ def example_theory():
       transit[location] = Var('take transit from ' + location)
       plane[location] = Var('take a plane from ' + location)
       #set up other delay propositions
+      roadwork[location]= Var('roadwork happening on the path from ' + location)
+      accident[location] = Var('accident on the path from ' + location)
+      toll[location] = Var('tolls on the path from ' + location)
 
 
-    #loop through each stop; if a given mode of transportation is missing, set the
-    #constraint that it can't be true
-    #note: we don't necessarily set it that proposition to true if it ISN'T missing because
-    #it could still be set false by other constraints.
+    #loop through each stop and set appropriate constraints
+    #note: we don't necessarily set it that proposition to true unless we know 100%
+    #it is true because it could still be set false by other constraints.
+    #(just because something is false in one scenario, doesn't mean it's true in the 
+    # opposite).
     for entry in stop_info:
+      location = entry["location"]
+      #if a given mode of transportation is not feasible for that trip, set the
+      #constraint that it can't be true
       if "drive" not in entry["travel"].keys():
-        E.add_constraint(~drive[entry["location"]])
+        E.add_constraint(~drive[location])
+      else:
+        #if it would take more than 3 hours to drive to/from this trip, tolls 
+        #will be there
+        if(entry["travel"]["drive"] > 3):
+          E.add_constraint(toll[location])
+          #cannot cross a toll if you have no money
+          E.add_constraint(((toll[location] & ~money) & drive[location]).negate())
+
       if "transit" not in entry["travel"].keys():
-        E.add_constraint(~transit[entry["location"]])
+        E.add_constraint(~transit[location])
       if "plane" not in entry["travel"].keys():
-        E.add_constraint(~plane[entry["location"]])
+        E.add_constraint(~plane[location])
+      
 
     #make sure weather is valid
     E.add_constraint(iff(sunny, ~rainy))
@@ -242,7 +258,7 @@ def example_theory():
     """
 
     #rainy or snowstorm increases the likelihood of accidents
-    E.add_constraint((rainy | snowstorm).negate() | accident)
+    #E.add_constraint((rainy | snowstorm).negate() | accident)
 
     """
     #snowstorm implies that transit and planes will be shut down
@@ -269,9 +285,7 @@ def example_theory():
     E.add_constraint(((holiday & accident) & drive).negate())
     #tolls and no money implies unfeasible trip
 
-    #tentative
-    E.add_constraint(((toll & ~money) & drive).negate())
-
+  
     #you must have at least one form of travel
     E.add_constraint(plane | transit | drive)
     """
