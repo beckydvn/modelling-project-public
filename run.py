@@ -261,9 +261,13 @@ if __name__ == "__main__":
 
     # Define starting point.
     start = geopy.Point(start_city["latitude"], start_city["longitude"])
+    end = geopy.Point(end_city["latitude"], end_city["longitude"])
+
     # Define a general distance object, initialized with a distance of 1 km.
     d = geopy.distance.distance(kilometers=next_dist)
 
+    all_stops = []
+    chosen_stops = []
     for i in range(10):
       # Use the `destination` method with a bearing of 0 degrees (which is north)
       # in order to go from point `start` 1 km to north.
@@ -273,12 +277,25 @@ if __name__ == "__main__":
       else:
         final = d.destination(point=start, bearing=final_bearing)
        
-
       #finds the location
       geolocator = Nominatim(user_agent="Bing")
       location = geolocator.reverse(str(final))
-      print(location)
+      print(str(i) + ": " + str(location))
+      all_stops.append(location)
       start = final
+
+    user_input = int(input("Please enter which stops you would like to take along the way." + 
+    "If you are done entering stops, please enter '-1'. If you don't want to take any stops," +
+    "enter -1 right away."))
+    while(user_input != -1):
+      chosen_stops.append(all_stops[user_input])
+      user_input = int(input("Enter your next stop: "))
+    if(chosen_stops == []):
+      chosen_stops.append(geolocator.reverse(str(end)))
+
+    for element in chosen_stops:
+      print(element)
+
 
 
     """"
