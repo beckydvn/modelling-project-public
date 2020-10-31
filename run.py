@@ -1,6 +1,7 @@
 from nnf import Var
 from lib204 import Encoding
 import geopy.distance
+import pyproj
 
 sunny = Var('sunny') # 🌞 
 rainy = Var('rainy') # rainy 1-hour delay
@@ -216,11 +217,10 @@ if __name__ == "__main__":
 
     raw_location = raw_location_input(canada_cities,america_cities)
     start_city, end_city = clarify_duplicates(canada, america, raw_location)
-    start_country = raw_location["starting country"]
-    end_country = raw_location["ending country"]
-
     print(start_city)
     print(end_city)
+    start_country = raw_location["starting country"]
+    end_country = raw_location["ending country"]
 
     border = get_international(start_city, end_city, canada_cities, america_cities)
     if(border):
@@ -236,15 +236,31 @@ if __name__ == "__main__":
     print("A trip from " + start_city["city"] + ", " + start_city["province/state"] + " to " + end_city["city"]
      + ", " + end_city["province/state"] + " is " + str(total_dist)+ " km long.")
     want_to_stop = input("Would you like to take any stops along the way? Enter (y/n):")
-    if(input == "y"):
+    if(want_to_stop == "y"):
       trips = int(input("How many stops would you like to take?"))
     else:
       trips = 1
 
-    
-    
+    if(trips > 1):
+      next_dist = total_dist/trips
+    else: 
+      next_dist = total_dist
 
-    
+  
+    geodesic = pyproj.Geod(ellps='WGS84')
+    fwd_azimuth,back_azimuth,distance = geodesic.inv(start_city["longitude"], start_city["latitude"], end_city["longitude"], end_city["latitude"])
+    print("bearing: " + str(fwd_azimuth))
+
+    # Define starting point.
+    start = geopy.Point(start_city["latitude"], start_city["longitude"])
+
+    # Define a general distance object, initialized with a distance of 1 km.
+    d = geopy.distance.distance(kilometers=next_dist)
+
+    # Use the `destination` method with a bearing of 0 degrees (which is north)
+    # in order to go from point `start` 1 km to north.
+    final = d.destination(point=start, bearing=fwd_azimuth)
+    print(str(final))
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
