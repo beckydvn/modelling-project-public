@@ -108,7 +108,6 @@ def example_theory():
         print (x)
         for y in canada[x]:
             print (y,':',canada[x][y])
-
     coord1 = (52.2296756, 21.0122287)
     coord2 = (52.406374, 16.9251681)"""
 
@@ -237,35 +236,50 @@ if __name__ == "__main__":
 
     print("A trip from " + start_city["city"] + ", " + start_city["province/state"] + " to " + end_city["city"]
      + ", " + end_city["province/state"] + " is " + str(total_dist)+ " km long.")
+
+    """
     want_to_stop = input("Would you like to take any stops along the way? Enter (y/n):")
     if(want_to_stop == "y"):
       trips = int(input("How many stops would you like to take?"))
     else:
       trips = 1
+    
 
     if(trips > 1):
       next_dist = total_dist/trips
     else: 
       next_dist = total_dist
-
+    """
+    next_dist = total_dist/10
   
     geodesic = pyproj.Geod(ellps='WGS84')
+    #calculates the initial bearing (fwd_azimuth)
     fwd_azimuth,back_azimuth,distance = geodesic.inv(start_city["longitude"], start_city["latitude"], end_city["longitude"], end_city["latitude"])
-    print("bearing: " + str(fwd_azimuth))
+    print("initial bearing: " + str(fwd_azimuth))
+    print("final bearing: " + str(back_azimuth - 180))
+    final_bearing = back_azimuth - 180
 
     # Define starting point.
     start = geopy.Point(start_city["latitude"], start_city["longitude"])
-
     # Define a general distance object, initialized with a distance of 1 km.
     d = geopy.distance.distance(kilometers=next_dist)
 
-    # Use the `destination` method with a bearing of 0 degrees (which is north)
-    # in order to go from point `start` 1 km to north.
-    final = d.destination(point=start, bearing=fwd_azimuth)
+    for i in range(10):
+      # Use the `destination` method with a bearing of 0 degrees (which is north)
+      # in order to go from point `start` 1 km to north.
+      #finds the next point from the starting point given the bearing
+      if(i < 5):
+        final = d.destination(point=start, bearing=fwd_azimuth)
+      else:
+        final = d.destination(point=start, bearing=final_bearing)
+       
 
-    geolocator = Nominatim(user_agent="Bing")
-    location = geolocator.reverse(str(final))
-    print(location)
+      #finds the location
+      geolocator = Nominatim(user_agent="Bing")
+      location = geolocator.reverse(str(final))
+      print(location)
+      start = final
+
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
@@ -277,4 +291,3 @@ if __name__ == "__main__":
         print(" %s: %.2f" % (vn, T.likelihood(v)))
     print()
     """
-    
