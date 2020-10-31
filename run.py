@@ -12,8 +12,6 @@ international = Var('international') # crossing the border
 money = Var('money') # money
 holiday = Var('holiday') # holiday 1.25-hour delay
 
-
-
 sunny = Var('sunny') # 🌞 
 rainy = Var('rainy') # rainy 1-hour delay
 snowstorm = Var('snowstorm') # snow storm 2-hour delay
@@ -40,6 +38,12 @@ snowstorm = {}
 drive = {}
 transit = {}
 plane = {}
+
+#stop_info is a list of dictionaries, where each entry contains the starting    
+#and ending location for each stop in user's chosen stops, and the distance between the two.
+#(in short it contains all the relevant info for the stops the user will take).
+stop_info = []
+
 
 # Build an example full theory for your setting and return it.
 #
@@ -205,6 +209,24 @@ def clarify_duplicates(canada, america, raw_location):
 def example_theory():
     E = Encoding()
 
+    for i in range(len(stop_info)):
+      #set up propositions for travel
+      drive[stop_info[i]["location"]] = Var('drive' + str(i))
+      transit[stop_info[i]["location"]] = Var('transit' + str(i))
+      plane[stop_info[i]["location"]] = Var('plane' + str(i))
+
+    #loop through each stop; if a given mode of transportation is missing, set the
+    #constraint that it can't be true
+    #note: we don't necessarily set it that proposition to true if it ISN'T missing because
+    #it could still be set false by other constraints.
+    for entry in stop_info:
+      if "drive" not in entry["travel"].keys():
+        E.add_constraint(~drive[entry["location"]])
+      if "transit" not in entry["travel"].keys():
+        E.add_constraint(~transit[entry["location"]])
+      if "plane" not in entry["travel"].keys():
+        E.add_constraint(~plane[entry["location"]])
+
     #make sure weather is valid
     E.add_constraint(iff(sunny, ~rainy))
     E.add_constraint(iff(rainy, ~sunny))
@@ -254,14 +276,17 @@ def example_theory():
     return E
 
 """def testing():
+  print("HERE")
+  print(return_info())
+  
     for x in canada:
         print (x)
         for y in canada[x]:
             print (y,':',canada[x][y])
     coord1 = (52.2296756, 21.0122287)
-    coord2 = (52.406374, 16.9251681)"""
-
-
+    coord2 = (52.406374, 16.9251681)
+    """
+    
 
 if __name__ == "__main__":
     #read in the databases (each database contains the city name and its 
@@ -276,7 +301,6 @@ if __name__ == "__main__":
       canada_cities.append(entry["city"].lower())
     for entry in america:
       america_cities.append(entry["city"].lower())    
-    T = example_theory()
 
     #get the raw location from the user and clarify any duplicates to get the
     #starting and ending city (the countries will of course remain the same)
@@ -284,15 +308,6 @@ if __name__ == "__main__":
     start_city, end_city = clarify_duplicates(canada, america, raw_location)
     start_country = raw_location["starting country"]
     end_country = raw_location["ending country"]
-
-    #determine if the travel is international or not and set the appropriate constraint
-    border = get_international(start_country, end_country)
-    if(border):
-      T.add_constraint(international)
-      print("This trip is international...")
-    else:
-      T.add_constraint(~international)
-      print("This trip is not international...")
 
     #calculate the total distance between the starting and ending city
     start_coord = (start_city["latitude"], start_city["longitude"])
@@ -360,10 +375,7 @@ if __name__ == "__main__":
     #add the ending location to the chosen stops
     #chosen_stops is now a list of all stops including the start and end
     chosen_stops.append({"location": end_city["city"], "coord": end})
-
-    #stop_distance is a list of dictionaries, where each entry contains the starting
-    #and ending location for each stop in user's chosen stops, and the distance between the two.
-    stop_distance = []
+    
     for i in range(len(chosen_stops) - 1):
       #calculate the distance between each stop
       distance = calc_distance(chosen_stops[i]["coord"], chosen_stops[i + 1]["coord"])
@@ -373,42 +385,36 @@ if __name__ == "__main__":
       print(dict_string)
       #set up the dictionary and append it to the list
       entry = {"location": dict_string, "distance" : distance}
-      stop_distance.append(entry)
+      stop_info.append(entry)
 
     #loop through every stop 
-    for i in range(len(stop_distance)):
-      #set up propositions for travel
-      drive[stop_distance[i]["location"]] = Var('drive' + str(i))
-      transit[stop_distance[i]["location"]] = Var('transit' + str(i))
-      plane[stop_distance[i]["location"]] = Var('plane' + str(i))
-      
+    for i in range(len(stop_info)):
       #now that we know the distance, we can calculate the time needed to travel
       #between each stop with each mode of transportation
-      distance = stop_distance[i]["distance"]
+      distance = stop_info[i]["distance"]
       drive_time = calc_time(distance, "drive")
       transit_time = calc_time(distance, "transit")
       plane_time = calc_time(distance, "plane")
       travel = determine_travel_modes(drive_time, transit_time, plane_time)
       #add a new key, the dictionary of available travel modes, to the list
-      stop_distance[i]["travel"] = travel
+      stop_info[i]["travel"] = travel
 
-    for i in range(len(stop_distance)):
-      print(str(stop_distance[i]))
+    for i in range(len(stop_info)):
+      print(str(stop_info[i]))
 
-    #loop through each stop; if a given mode of transportation is missing, set the
-    #constraint that it can't be true
-    #note: we don't necessarily set it that proposition to true if it ISN'T missing because
-    #it could still be set false by other constraints.
-    for entry in stop_distance:
-      print(entry["travel"].keys())
-      if "drive" not in entry["travel"].keys():
-        T.add_constraint(~drive[entry["location"]])
-      if "transit" not in entry["travel"].keys():
-        T.add_constraint(~transit[entry["location"]])
-      if "plane" not in entry["travel"].keys():
-        T.add_constraint(~plane[entry["location"]])
+    #set up the solver
+    T = example_theory()
 
-      
+    #determine if the travel is international or not and set the appropriate constraint
+    border = get_international(start_country, end_country)
+    if(border):
+      T.add_constraint(international)
+      print("This trip is international...")
+    else:
+      T.add_constraint(~international)
+      print("This trip is not international...")
+
+
 
 
     print("\nSatisfiable: %s" % T.is_satisfiable())
