@@ -30,16 +30,16 @@ plane = Var('plane') # 🛩
 sunny = {}
 rainy = {}
 snowstorm = {}
-"""
-#roadwork = {}
-#accident = {}
-#toll = {}
 
+roadwork = {}
+accident = {}
+toll = {}
+"""
 drive = {}
 transit = {}
 plane = {}
 
-#stop_info is a list of dictionaries, where each entry contains the starting    
+#stop_info is a (global) list of dictionaries, where each entry contains the starting    
 #and ending location for each stop in user's chosen stops, and the distance between the two.
 #(in short it contains all the relevant info for the stops the user will take).
 stop_info = []
@@ -211,9 +211,12 @@ def example_theory():
 
     for i in range(len(stop_info)):
       #set up propositions for travel
-      drive[stop_info[i]["location"]] = Var('drive' + str(i))
-      transit[stop_info[i]["location"]] = Var('transit' + str(i))
-      plane[stop_info[i]["location"]] = Var('plane' + str(i))
+      location = stop_info[i]["location"]
+      drive[location] = Var('drive from ' + location)
+      transit[location] = Var('take transit from ' + location)
+      plane[location] = Var('take a plane from ' + location)
+      #set up other delay propositions
+
 
     #loop through each stop; if a given mode of transportation is missing, set the
     #constraint that it can't be true
@@ -367,7 +370,7 @@ if __name__ == "__main__":
     #get the user input for the stops they would like and store it in chosen_stops
     user_input = int(input("Please enter which stops you would like to take along the way." + 
     "If you are done entering stops, please enter '-1'. If you don't want to take any stops," +
-    "enter -1 right away."))
+    " enter -1 right away."))
     while(user_input != -1):
       chosen_stops.append(all_stops[user_input])
       user_input = int(input("Enter your next stop: "))
