@@ -12,11 +12,11 @@ international = Var('international') # crossing the border
 money = Var('money') # money
 holiday = Var('holiday') # holiday 1.25-hour delay
 
+
+"""
 sunny = Var('sunny') # 🌞 
 rainy = Var('rainy') # rainy 1-hour delay
 snowstorm = Var('snowstorm') # snow storm 2-hour delay
-
-"""
 roadwork = Var('roadwork') # 🚧 0.75-hour delay
 accident = Var('accident') # accident 1.5-hour delay
 toll = Var('toll') # 30-min delay
@@ -25,12 +25,10 @@ transit = Var('transit') # transit
 plane = Var('plane') # 🛩  
 """
 
-"""
-#sunny = {"Toronto to Ottawa": proposition, "Ottawa to Scranton": proposition}
 sunny = {}
 rainy = {}
 snowstorm = {}
-"""
+
 
 roadwork = {}
 accident = {}
@@ -219,7 +217,10 @@ def example_theory():
       roadwork[location]= Var('roadwork happening on the path from ' + location)
       accident[location] = Var('accident on the path from ' + location)
       toll[location] = Var('tolls on the path from ' + location)
-
+      #set up weather propositions
+      sunny[location]= Var('sunny from ' + location)
+      rainy[location] = Var('rainy from ' + location)
+      snowstorm[location] = Var('snowstorm from ' + location)      
 
     #loop through each stop and set appropriate constraints
     #note: we don't necessarily set it that proposition to true unless we know 100%
@@ -232,38 +233,41 @@ def example_theory():
       #constraint that it can't be true
       if "drive" not in entry["travel"].keys():
         E.add_constraint(~drive[location])
+      #if it would take more than 3 hours to drive to/from this trip, tolls 
+      #will be there
       else:
-        #if it would take more than 3 hours to drive to/from this trip, tolls 
-        #will be there
         if(entry["travel"]["drive"] > 3):
           E.add_constraint(toll[location])
           #cannot cross a toll if you have no money
           E.add_constraint(((toll[location] & ~money) & drive[location]).negate())
-
       if "transit" not in entry["travel"].keys():
         E.add_constraint(~transit[location])
       if "plane" not in entry["travel"].keys():
         E.add_constraint(~plane[location])
-      
-
-    #make sure weather is valid
-    E.add_constraint(iff(sunny, ~rainy))
-    E.add_constraint(iff(rainy, ~sunny))
-    E.add_constraint(iff(sunny, ~snowstorm))
-    E.add_constraint(iff(snowstorm, ~sunny))
-    
-    """
-    #good weather and holiday implies tickets will be sold out and you have to drive
-    E.add_constraint((sunny & holiday).negate() | (transit | plane).negate())
-    """
-
-    #rainy or snowstorm increases the likelihood of accidents
-    #E.add_constraint((rainy | snowstorm).negate() | accident)
-
-    """
-    #snowstorm implies that transit and planes will be shut down
-    E.add_constraint(~snowstorm | (transit | plane).negate())
-    """
+      #weather constraints (ensure weather configurations are valid)
+      E.add_constraint(iff(sunny[location], ~rainy[location]))
+      E.add_constraint(iff(rainy[location], ~sunny[location]))
+      E.add_constraint(iff(sunny[location], ~snowstorm[location]))
+      E.add_constraint(iff(snowstorm[location], ~sunny[location]))
+      #good weather and holiday implies tickets will be sold out and you have to drive
+      E.add_constraint((sunny[location] & holiday).negate() | (transit[location] | plane[location]).negate())
+      #rainy or snowstorm increases the likelihood of accidents
+      E.add_constraint((rainy[location] | snowstorm[location]).negate() | accident[location])
+      #snowstorm implies that transit and planes will be shut down
+      E.add_constraint(~snowstorm[location] | (transit[location] | plane[location]).negate())
+      #driving constraints (come into play if they are driving):
+      #bad weather and roadwork implies unfeasible trip
+      E.add_constraint((((rainy[location] | snowstorm[location]) & roadwork[location]) & drive[location]).negate())
+      #bad weather and holiday implies unfeasible trip
+      E.add_constraint((((rainy[location] | snowstorm[location]) & holiday) & drive[location]).negate())
+      #roadwork and holiday implies unfeasible trip
+      E.add_constraint(((roadwork[location] & holiday) & drive[location]).negate())
+      #roadwork and accident implies unfeasible trip
+      E.add_constraint(((roadwork[location] & accident[location]) & drive[location]).negate())
+      #holiday and accident implies unfeasible trip
+      E.add_constraint(((holiday & accident[location]) & drive[location]).negate())
+      #you must have at least one form of travel
+      E.add_constraint(plane[location] | transit[location] | drive[location])
 
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
@@ -271,39 +275,7 @@ def example_theory():
     #no documents means you can't cross the border
     E.add_constraint((international & documents) | ~international)
 
-    """
-    #driving constraints (come into play if they are driving):
-    #bad weather and roadwork implies unfeasible trip
-    E.add_constraint((((rainy | snowstorm) & roadwork) & drive).negate())
-    #bad weather and holiday implies unfeasible trip
-    E.add_constraint((((rainy | snowstorm) & holiday) & drive).negate())
-    #roadwork and holiday implies unfeasible trip
-    E.add_constraint(((roadwork & holiday) & drive).negate())
-    #roadwork and accident implies unfeasible trip
-    E.add_constraint(((roadwork & accident) & drive).negate())
-    #holiday and accident implies unfeasible trip
-    E.add_constraint(((holiday & accident) & drive).negate())
-    #tolls and no money implies unfeasible trip
-
-  
-    #you must have at least one form of travel
-    E.add_constraint(plane | transit | drive)
-    """
-
     return E
-
-"""def testing():
-  print("HERE")
-  print(return_info())
-  
-    for x in canada:
-        print (x)
-        for y in canada[x]:
-            print (y,':',canada[x][y])
-    coord1 = (52.2296756, 21.0122287)
-    coord2 = (52.406374, 16.9251681)
-    """
-    
 
 if __name__ == "__main__":
     #read in the databases (each database contains the city name and its 
@@ -430,9 +402,6 @@ if __name__ == "__main__":
     else:
       T.add_constraint(~international)
       print("This trip is not international...")
-
-
-
 
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
