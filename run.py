@@ -268,6 +268,10 @@ def example_theory():
       E.add_constraint(((holiday & accident[location]) & drive[location]).negate())
       #you must have at least one form of travel
       E.add_constraint(plane[location] | transit[location] | drive[location])
+      #only one form of travel can be true at once
+      E.add_constraint(iff(plane[location], (drive[location] | transit[location]).negate()))
+      E.add_constraint(iff(drive[location], (plane[location] | transit[location]).negate()))
+      E.add_constraint(iff(transit[location], (drive[location] | plane[location]).negate()))
 
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
