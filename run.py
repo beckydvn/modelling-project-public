@@ -218,8 +218,8 @@ if __name__ == "__main__":
 
     raw_location = raw_location_input(canada_cities,america_cities)
     start_city, end_city = clarify_duplicates(canada, america, raw_location)
-    print(start_city)
-    print(end_city)
+    #print(start_city)
+    #clearprint(end_city)
     start_country = raw_location["starting country"]
     end_country = raw_location["ending country"]
 
@@ -237,19 +237,6 @@ if __name__ == "__main__":
     print("A trip from " + start_city["city"] + ", " + start_city["province/state"] + " to " + end_city["city"]
      + ", " + end_city["province/state"] + " is " + str(total_dist)+ " km long.")
 
-    """
-    want_to_stop = input("Would you like to take any stops along the way? Enter (y/n):")
-    if(want_to_stop == "y"):
-      trips = int(input("How many stops would you like to take?"))
-    else:
-      trips = 1
-    
-
-    if(trips > 1):
-      next_dist = total_dist/trips
-    else: 
-      next_dist = total_dist
-    """
     next_dist = total_dist/10
   
     geodesic = pyproj.Geod(ellps='WGS84')
@@ -268,6 +255,12 @@ if __name__ == "__main__":
 
     all_stops = []
     chosen_stops = []
+
+    #define the geolocator
+    geolocator = Nominatim(user_agent="Bing")
+
+    #add the starting location to the chosen stops
+    chosen_stops.append({"location": start_city["city"], "coord": start})
     for i in range(10):
       # Use the `destination` method with a bearing of 0 degrees (which is north)
       # in order to go from point `start` 1 km to north.
@@ -278,10 +271,9 @@ if __name__ == "__main__":
         final = d.destination(point=start, bearing=final_bearing)
        
       #finds the location
-      geolocator = Nominatim(user_agent="Bing")
       location = geolocator.reverse(str(final))
       print(str(i) + ": " + str(location))
-      all_stops.append(location)
+      all_stops.append({"location":str(location),"coord":final})
       start = final
 
     user_input = int(input("Please enter which stops you would like to take along the way." + 
@@ -290,13 +282,27 @@ if __name__ == "__main__":
     while(user_input != -1):
       chosen_stops.append(all_stops[user_input])
       user_input = int(input("Enter your next stop: "))
-    if(chosen_stops == []):
-      chosen_stops.append(geolocator.reverse(str(end)))
+
+    #add the ending location to the chosen stops
+    chosen_stops.append({"location": end_city["city"], "coord": end})
 
     for element in chosen_stops:
       print(element)
+    print()
 
+    stop_distance = []
+    for i in range(len(chosen_stops) - 1):
+      distance = calc_distance(chosen_stops[i]["coord"], chosen_stops[i + 1]["coord"])
+      print("The distance between " + str(chosen_stops[i]["location"]) + " and " + 
+      str(chosen_stops[i + 1]["location"]) + " is " + str(distance))
 
+      dict_string = str(chosen_stops[i]["location"]) + " to " + str(chosen_stops[i+1]["location"])
+      print(dict_string)
+      entry = {dict_string : distance}
+      stop_distance.append(entry)
+
+    for entry in stop_distance:
+      print(entry) 
 
     """"
     print("\nSatisfiable: %s" % T.is_satisfiable())
