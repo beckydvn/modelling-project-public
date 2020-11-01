@@ -5,31 +5,18 @@ import geopy.distance
 from geopy.geocoders import Nominatim
 import pyproj
 
-
+#factors that might affect the trips
 virus = Var('virus') # 🦠 
 documents = Var('documents') # document
 international = Var('international') # crossing the border
 money = Var('money') # money
 holiday = Var('holiday') # holiday 1.25-hour delay
 
-
-"""
-sunny = Var('sunny') # 🌞 
-rainy = Var('rainy') # rainy 1-hour delay
-snowstorm = Var('snowstorm') # snow storm 2-hour delay
-roadwork = Var('roadwork') # 🚧 0.75-hour delay
-accident = Var('accident') # accident 1.5-hour delay
-toll = Var('toll') # 30-min delay
-drive = Var('drive') # 🚗 
-transit = Var('transit') # transit 
-plane = Var('plane') # 🛩  
-"""
-
+#for each factor variables, we're storing them in dictionaries because when asking the users for their inputs,
+#there might be multiple stops along the trip, therefore we would need propositions for each stop along the way.
 sunny = {}
 rainy = {}
 snowstorm = {}
-
-
 roadwork = {}
 accident = {}
 toll = {}
@@ -42,12 +29,6 @@ plane = {}
 #(in short it contains all the relevant info for the stops the user will take).
 stop_info = []
 
-
-# Build an example full theory for your setting and return it.
-#
-#  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
-#  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
-#  what the expectations are.
 
 def read_files(country, filename):
   """read in a database of cities from a specific country and write it to a list 
@@ -272,7 +253,6 @@ def example_theory():
       E.add_constraint(iff(plane[location], (drive[location] | transit[location]).negate()))
       E.add_constraint(iff(drive[location], (plane[location] | transit[location]).negate()))
       E.add_constraint(iff(transit[location], (drive[location] | plane[location]).negate()))
-
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
     E.add_constraint(~international | (~virus & documents))
@@ -415,6 +395,7 @@ if __name__ == "__main__":
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
     print("   Solution: %s" % T.solve())
+
     """
     print("\nVariable likelihoods:")
     for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
