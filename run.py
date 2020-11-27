@@ -9,9 +9,10 @@ import pyproj
 virus = Var('virus') # 🦠 
 documents = Var('documents') # document
 international = Var('international') # crossing the border
-money = Var('money') # money
+toll_money = Var('money for tolls') # toll money
+afford_plane = Var('can afford plane ticket(s)') # plane ticket is affordable
 holiday = Var('holiday') # holiday 
-more_than_five = Var('more than five people')
+more_than_five = Var('more than five people') # travelling with more than 5 people
 
 #for each factor variables, we're storing them in dictionaries because when asking the users for their inputs,
 #there might be multiple stops along the trip, therefore we would need propositions for each stop along the way.
@@ -238,8 +239,8 @@ def example_theory():
       else:
         if(entry["travel"]["drive"] > 3):
           E.add_constraint(toll[location])
-          #cannot cross a toll if you have no money
-          E.add_constraint(((toll[location] & ~money) & drive[location]).negate())
+          #cannot cross a toll if you have no toll money
+          E.add_constraint(((toll[location] & ~toll_money) & drive[location]).negate())
       if "transit" not in entry["travel"].keys():
         E.add_constraint(~transit[location])
       if "plane" not in entry["travel"].keys():
@@ -275,6 +276,9 @@ def example_theory():
 
       #you cannot drive anywhere if you have more than 5 people
       E.add_constraint(~more_than_five | ~drive[location])
+
+      #you cannot take a plane if you don't have money for a ticket
+      E.add_constraint(afford_plane | ~plane[location])
       
 
     #only relevant if travel is international
