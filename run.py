@@ -155,7 +155,7 @@ def clarify_duplicates(canada, america, raw_location):
         if(entry["city"].lower() == raw_end_city):
           duplicates_end.append(entry)
 
-    #if there are duplicates, the starting city is the first (original) city
+    #if there are no duplicates, the starting city is the first (original) city
     if(len(duplicates_start) == 1):
       start_city = duplicates_start[0]
     #otherwise, allow the user to pick the city they want
