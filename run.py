@@ -279,8 +279,6 @@ def example_theory():
 
       #you cannot take a plane if you don't have money for a ticket
       E.add_constraint(afford_plane | ~plane[location])
-
-      #print("urgent: ", str(entry["urgent"]))
       
       #if you are taking an urgent trip, only the fastest trip (determined earlier) is possible
       if "drive" in entry["urgent"].keys():
@@ -428,7 +426,6 @@ if __name__ == "__main__":
       transit_time = calc_time(distance, "transit")
       plane_time = calc_time(distance, "plane")
       travel = determine_travel_modes(drive_time, transit_time, plane_time)
-      print("\nALL TRAVEL MODES:" + str(travel))
 
       all_modes = []
       urgent = {}
@@ -445,8 +442,6 @@ if __name__ == "__main__":
         if travel[mode] <= fastest:
           urgent[mode] = travel[mode]
       
-      print("\nURGENT TRAVEL MODE:", str(urgent))
-
       #add a new key, the dictionary of available travel modes, to the list
       stop_info[i]["travel"] = travel
       #do the same with the urgent travel mode
