@@ -134,6 +134,7 @@ def clarify_duplicates(canada, america, raw_location):
     """This function asks the user to clarify their chosen city if duplicates exist."""
     duplicates_start = []
     duplicates_end = []
+    inputOK = False
 
     raw_start_city = raw_location["starting city"]
     raw_start_country = raw_location["starting country"]
@@ -172,20 +173,31 @@ def clarify_duplicates(canada, america, raw_location):
         for value in duplicates_start[i].values():
           print(value)
         print("\n")
-      choice = int(input("Enter your choice:"))
+
+      while(not inputOK):
+        choice = int(input("Enter your choice:"))
+        if(choice > 0 and choice < len(duplicates_start)):
+          inputOK = True
       start_city = duplicates_start[choice]
+
+    #reset flag
+    inputOK = False
 
     #do the same for the destination city
     if(len(duplicates_end) == 1):
       end_city = duplicates_end[0]
     else:
       print("Please enter the number beside the destination city you are referring to.") 
+      #print(duplicates_end)
       for i in range(len(duplicates_end)):
         print(i)
         for value in duplicates_end[i].values():
           print(value)
         print("\n")
-      choice = int(input("Enter your choice:"))
+      while(not inputOK):
+        choice = int(input("Enter your choice:"))
+        if(choice > 0 and choice < len(duplicates_end)):
+          inputOK = True
       end_city = duplicates_end[choice]
 
     return start_city, end_city
@@ -259,6 +271,10 @@ def example_theory():
       E.add_constraint(iff(plane[location], (drive[location] | transit[location]).negate()))
       E.add_constraint(iff(drive[location], (plane[location] | transit[location]).negate()))
       E.add_constraint(iff(transit[location], (drive[location] | plane[location]).negate()))
+
+      #only take the fastest method of travel
+      #
+
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
     E.add_constraint(~international | (~virus & documents))
