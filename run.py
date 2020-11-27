@@ -10,7 +10,8 @@ virus = Var('virus') # 🦠
 documents = Var('documents') # document
 international = Var('international') # crossing the border
 money = Var('money') # money
-holiday = Var('holiday') # holiday 1.25-hour delay
+holiday = Var('holiday') # holiday 
+more_than_five = Var('more than five people')
 
 #for each factor variables, we're storing them in dictionaries because when asking the users for their inputs,
 #there might be multiple stops along the trip, therefore we would need propositions for each stop along the way.
@@ -176,7 +177,7 @@ def clarify_duplicates(canada, america, raw_location):
 
       while(not inputOK):
         choice = int(input("Enter your choice:"))
-        if(choice > 0 and choice < len(duplicates_start)):
+        if(choice > -1 and choice < len(duplicates_start)):
           inputOK = True
       start_city = duplicates_start[choice]
 
@@ -196,7 +197,7 @@ def clarify_duplicates(canada, america, raw_location):
         print("\n")
       while(not inputOK):
         choice = int(input("Enter your choice:"))
-        if(choice > 0 and choice < len(duplicates_end)):
+        if(choice > -1 and choice < len(duplicates_end)):
           inputOK = True
       end_city = duplicates_end[choice]
 
@@ -272,8 +273,9 @@ def example_theory():
       E.add_constraint(iff(drive[location], (plane[location] | transit[location]).negate()))
       E.add_constraint(iff(transit[location], (drive[location] | plane[location]).negate()))
 
-      #only take the fastest method of travel
-      #
+      #you cannot drive anywhere if you have more than 5 people
+      E.add_constraint(~more_than_five | ~drive[location])
+      
 
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
