@@ -13,6 +13,7 @@ toll_money = Var('money for tolls') # toll money
 afford_plane = Var('can afford plane ticket(s)') # plane ticket is affordable
 holiday = Var('holiday') # holiday 
 more_than_five = Var('more than five people') # travelling with more than 5 people
+urgent_trip = Var('trip is urgent') # trip is urgent
 
 #for each factor variables, we're storing them in dictionaries because when asking the users for their inputs,
 #there might be multiple stops along the trip, therefore we would need propositions for each stop along the way.
@@ -30,7 +31,6 @@ plane = {}
 #and ending location for each stop in user's chosen stops, and the distance between the two.
 #(in short it contains all the relevant info for the stops the user will take).
 stop_info = []
-
 
 def read_files(country, filename):
   """read in a database of cities from a specific country and write it to a list 
@@ -279,6 +279,16 @@ def example_theory():
 
       #you cannot take a plane if you don't have money for a ticket
       E.add_constraint(afford_plane | ~plane[location])
+
+      #print("urgent: ", str(entry["urgent"]))
+      
+      #if you are taking an urgent trip, only the fastest trip (determined earlier) is possible
+      if "drive" in entry["urgent"].keys():
+        E.add_constraint(~urgent_trip  | (~transit[location] & ~plane[location]))
+      elif "transit" in entry["urgent"].keys():
+        E.add_constraint(~urgent_trip  | (~drive[location] & ~plane[location]))
+      elif "plane" in entry["urgent"].keys():
+        E.add_constraint(~urgent_trip  | (~transit[location] & ~drive[location]))
       
 
     #only relevant if travel is international
@@ -309,6 +319,17 @@ if __name__ == "__main__":
     start_city, end_city = clarify_duplicates(canada, america, raw_location)
     start_country = raw_location["starting country"]
     end_country = raw_location["ending country"]
+
+    #ask if the trip is urgent or not
+    choice = input("Is the trip urgent? (Y \ N)")
+    choice = choice.upper()
+    while(choice != "Y" and choice != "N"):
+      choice = input("Please enter a valid option.")
+      choice = choice.upper()
+    if(choice.upper() == "Y"):
+      is_urgent = True
+    else:
+      is_urgent = False
 
     #calculate the total distance between the starting and ending city
     start_coord = (start_city["latitude"], start_city["longitude"])
@@ -407,8 +428,33 @@ if __name__ == "__main__":
       transit_time = calc_time(distance, "transit")
       plane_time = calc_time(distance, "plane")
       travel = determine_travel_modes(drive_time, transit_time, plane_time)
+      print("\nALL TRAVEL MODES:" + str(travel))
+
+      all_modes = []
+      urgent = {}
+      #determine the FASTEST mode of travel
+      if travel != {}:
+        if "drive" in travel.keys():
+          all_modes.append(travel["drive"])
+        if "transit" in travel.keys():
+          all_modes.append(travel["transit"])
+        if "plane" in travel.keys():
+          all_modes.append(travel["plane"])
+      fastest = min(all_modes)
+      for mode in travel:
+        if travel[mode] <= fastest:
+          urgent[mode] = travel[mode]
+      
+      print("\nURGENT TRAVEL MODE:", str(urgent))
+
       #add a new key, the dictionary of available travel modes, to the list
       stop_info[i]["travel"] = travel
+      #do the same with the urgent travel mode
+      stop_info[i]["urgent"] = urgent
+
+      #reset the travel modes
+      travel = {}
+      urgent = {}
 
     for i in range(len(stop_info)):
       print(str(stop_info[i]))
@@ -424,6 +470,12 @@ if __name__ == "__main__":
     else:
       T.add_constraint(~international)
       print("This trip is not international...")
+
+    #add more constraints if the trip is urgent
+    if(is_urgent):
+      T.add_constraint(urgent_trip)
+    else:
+      T.add_constraint(~urgent_trip)
 
     print("\nSatisfiable: %s" % T.is_satisfiable())
     print("# Solutions: %d" % T.count_solutions())
