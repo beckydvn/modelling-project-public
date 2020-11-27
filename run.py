@@ -161,11 +161,7 @@ def clarify_duplicates(canada, america, raw_location):
         if(entry["city"].lower() == raw_end_city):
           duplicates_end.append(entry)
 
-<<<<<<< HEAD
-    #if there are no duplicates, the starting city is the first (original) city
-=======
     #if there are NO duplicates, the starting city is the first (original) city
->>>>>>> 37c5553bb263f78e64b400d716f8d1e55f448837
     if(len(duplicates_start) == 1):
       start_city = duplicates_start[0]
     #otherwise, allow the user to pick the city they want
@@ -350,19 +346,19 @@ if __name__ == "__main__":
     #add the starting location to the chosen stops
     chosen_stops.append({"location": start_city["city"], "coord": start})
 
-    user_input = -2; #initizalize
-
+    user_input = -2 #initizalize
     #get the user input for the stops they would like and store it in chosen_stops
     print("Please enter which stops you would like to take along the way." + 
     "If you are done entering stops, please enter '-1'. If you don't want to take any stops," +
     " enter -1 right away.")
     while(user_input != -1):
+      user_input = int(input("Enter your next stop: "))
       if (user_input < -1 or user_input > 9):
-        user_input = int(input("Enter your next stop: "))
-        if (user_input < -1 and user_input > 9):
           print("Wrong input! Please try again!")
+      else:    
         if (user_input != -1):
-          chosen_stops.append(all_stops[user_input]) 
+          chosen_stops.append(all_stops[user_input])
+
     #add the ending location to the chosen stops
     #chosen_stops is now a list of all stops including the start and end
     chosen_stops.append({"location": end_city["city"], "coord": end})
