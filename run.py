@@ -244,11 +244,15 @@ def example_theory():
         E.add_constraint(~transit[location])
       if "plane" not in entry["travel"].keys():
         E.add_constraint(~plane[location])
-      #weather constraints (ensure weather configurations are valid)
-      E.add_constraint(iff(sunny[location], ~rainy[location]))
-      E.add_constraint(iff(rainy[location], ~sunny[location]))
-      E.add_constraint(iff(sunny[location], ~snowstorm[location]))
-      E.add_constraint(iff(snowstorm[location], ~sunny[location]))
+
+      #at least one weather mode has to be true
+      E.add_constraint(sunny[location] | rainy[location] | snowstorm[location])
+
+      #only one form of weather can be true at once
+      E.add_constraint(~sunny[location] | (~snowstorm[location] & ~rainy[location]))
+      E.add_constraint(~rainy[location] | (~snowstorm[location] & ~sunny[location]))
+      E.add_constraint(~snowstorm[location] | (~sunny[location] & ~rainy[location]))
+
       #good weather and holiday implies tickets will be sold out and you have to drive
       E.add_constraint((sunny[location] & holiday).negate() | (transit[location] | plane[location]).negate())
       #rainy or snowstorm increases the likelihood of accidents
@@ -269,9 +273,9 @@ def example_theory():
       #you must have at least one form of travel
       E.add_constraint(plane[location] | transit[location] | drive[location])
       #only one form of travel can be true at once
-      E.add_constraint(iff(plane[location], (drive[location] | transit[location]).negate()))
-      E.add_constraint(iff(drive[location], (plane[location] | transit[location]).negate()))
-      E.add_constraint(iff(transit[location], (drive[location] | plane[location]).negate()))
+      E.add_constraint(~drive[location] | (~transit[location] & ~plane[location]))
+      E.add_constraint(~transit[location] | (~drive[location] & ~plane[location]))
+      E.add_constraint(~plane[location] | (~transit[location] & ~drive[location]))
 
       #you cannot drive anywhere if you have more than 5 people
       E.add_constraint(~more_than_five | ~drive[location])
