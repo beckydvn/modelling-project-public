@@ -1,10 +1,10 @@
 [![Work in Repl.it](https://classroom.github.com/assets/work-in-replit-14baed9a392b3a25080506f3b7b6d57f295ec2978f6f33ec97e36a161684cbe9.svg)](https://classroom.github.com/online_ide?assignment_repo_id=317167&assignment_repo_type=GroupAssignmentRepo)
 
-# CISC/CMPE 204 Modelling Project
+# CISC/CMPE 204 Modelling Project - Group 1
 
-Welcome to the major project for CISC/CMPE 204 (Fall 2020)!
+In terms of structure, our project is pretty straightforward - the only file that code is written in is run.py. We also imported databases for the canadian and american cities.
 
-Change this README.md file to summarize your project (few sentences at most), and provide pointers to the general structure of the repository. How you organize and build things (which files, how you structure things, etc) is entirely up to you! The only things you must keep in place are what is already listed in the **Structure** section below.
+To summarize, our project allows the user to pick 2 cities in Canada or the United States to travel between, as well as any from 0-10 stops along the way. A model corresponds to the combination of feasible trips from the start to the destination. The user can also specify if they want to take an urgent trip. Follow the user input and enjoy!
 
 ## Structure
 
