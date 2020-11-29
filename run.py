@@ -24,7 +24,7 @@ roadwork = {}
 accident = {}
 toll = {}
 drive = {}
-transit = {}
+transit = {} 
 plane = {}
 
 #stop_info is a (global) list of dictionaries, where each entry contains the starting    
@@ -287,6 +287,10 @@ def example_theory():
       elif "plane" in entry["urgent"].keys():
         E.add_constraint(~urgent_trip  | (~transit[location] & ~drive[location]))
       
+      #if you have the virus, you ain't flying nowhere
+      E.add_constraint(~plane[location] | (~virus & documents))
+      #if you don't have documents, you ain't flying nowhere
+      E.add_constraint(documents | ~plane[location])
 
     #only relevant if travel is international
     #if you have tested positive for the virus/been in contact, you can't cross the border
