@@ -190,7 +190,6 @@ def clarify_duplicates(canada, america, raw_location):
       end_city = duplicates_end[0]
     else:
       print("Please enter the number beside the destination city you are referring to.") 
-      #print(duplicates_end)
       for i in range(len(duplicates_end)):
         print(i)
         for value in duplicates_end[i].values():
@@ -406,13 +405,10 @@ if __name__ == "__main__":
     
     for i in range(len(chosen_stops) - 1):
       #calculate the distance between each stop
-      print(chosen_stops[i]["coord"])
-      print(chosen_stops[i+1]["coord"])
       distance = calc_distance(chosen_stops[i]["coord"], chosen_stops[i + 1]["coord"])
       print("The distance between " + str(chosen_stops[i]["location"]) + " and " + 
-      str(chosen_stops[i + 1]["location"]) + " is " + str(distance) + "km. ")
+      str(chosen_stops[i + 1]["location"]) + " is " + str(distance) + " km. ")
       dict_string = str(chosen_stops[i]["location"]) + " to " + str(chosen_stops[i+1]["location"])
-      print(dict_string)
       #set up the dictionary and append it to the list
       entry = {"location": dict_string, "distance" : distance}
       stop_info.append(entry)
@@ -426,6 +422,9 @@ if __name__ == "__main__":
       transit_time = calc_time(distance, "transit")
       plane_time = calc_time(distance, "plane")
       travel = determine_travel_modes(drive_time, transit_time, plane_time)
+
+      for mode in travel:
+        print(mode + " from " + stop_info[i]["location"] + ":" + str(travel[mode]) + " hours.")
 
       all_modes = []
       urgent = {}
@@ -450,9 +449,6 @@ if __name__ == "__main__":
       #reset the travel modes
       travel = {}
       urgent = {}
-
-    for i in range(len(stop_info)):
-      print(str(stop_info[i]))
 
     #set up the solver
     T = example_theory()
