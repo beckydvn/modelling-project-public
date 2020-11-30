@@ -255,6 +255,7 @@ def example_theory():
 
       #good weather and holiday implies tickets will be sold out and you have to drive
       E.add_constraint((sunny[location] & holiday).negate() | (transit[location] | plane[location]).negate())
+
       #rainy or snowstorm increases the likelihood of accidents
       E.add_constraint((rainy[location] | snowstorm[location]).negate() | accident[location])
       #snowstorm implies that transit and planes will be shut down
