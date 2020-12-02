@@ -32,6 +32,24 @@ plane = {}
 #(in short it contains all the relevant info for the stops the user will take).
 stop_info = []
 
+def set_up_props():
+    """Initializes the propositions to be used by the model"""
+    #loop through all stops
+    for i in range(len(stop_info)):
+      #set up propositions for travel
+      location = stop_info[i]["location"]
+      drive[location] = Var('drive from ' + location)
+      transit[location] = Var('take transit from ' + location)
+      plane[location] = Var('take a plane from ' + location)
+      #set up other delay propositions
+      roadwork[location]= Var('roadwork happening on the path from ' + location)
+      accident[location] = Var('accident on the path from ' + location)
+      toll[location] = Var('tolls on the path from ' + location)
+      #set up weather propositions
+      sunny[location]= Var('sunny from ' + location)
+      rainy[location] = Var('rainy from ' + location)
+      snowstorm[location] = Var('snowstorm from ' + location)
+
 def read_files(country, filename):
   """read in a database of cities from a specific country and write it to a list 
   of dictionaries"""
@@ -60,19 +78,52 @@ def read_files(country, filename):
 
   file1.close()
   return country
-    
-def iff(left, right):
-  """emulate an if and only if statement"""
-  return (left.negate() | right) & (right.negate() | left)
 
 def calc_distance(coord1, coord2):
   """calculate the distance between two locations using latitudes and longtitudes"""
   return geopy.distance.distance(coord1, coord2).km 
 
-
 def get_international(start_country, end_country):
     """checking if the trip is international or not (from Canada to USA and vice versa)"""
     return start_country != end_country
+
+def get_urgency():
+    """ask if the trip is urgent or not"""
+    choice = input("Is the trip urgent? (Y \ N)")
+    choice = choice.upper()
+    while(choice != "Y" and choice != "N"):
+      choice = input("Please enter a valid option.")
+      choice = choice.upper()
+    if(choice.upper() == "Y"):
+      is_urgent = True
+    else:
+      is_urgent = False
+    return is_urgent
+
+def is_test():
+    """ask if the current run is a test or not"""
+    choice = input("Do you want to run this in test mode where you can add extra constraints? (Y \ N)")
+    choice = choice.upper()
+    while(choice != "Y" and choice != "N"):
+      choice = input("Please enter a valid option.")
+      choice = choice.upper()
+    if(choice.upper() == "Y"):
+      print("Running in test mode...\n")
+      test = True
+    else:
+      print("Running normally...\n")
+      test = False
+    return test
+
+def decide_test():
+    """Get any extra constraints from the user if they are running a test."""
+    print("What would you like to test? Type 'w' to test weather.\nType 'a' to test affordability.\nType 't' to test travel.")
+    print("Please note that you must enter cities that cross a federal border for 'a'" + 
+    " or you will get 0 solutions.")
+    user_input = input()
+    while(user_input.lower() not in ["w", "a", "t"]):
+      user_input = input("Please enter valid input.")
+    return user_input.lower()
 
 def calc_time(distance, mode):
     """calculates the amount of time a trip would take given the mode of transportation.
@@ -201,26 +252,12 @@ def clarify_duplicates(canada, america, raw_location):
           inputOK = True
       end_city = duplicates_end[choice]
 
-    return start_city, end_city
-
+    return start_city, end_city  
 
 def example_theory():
     E = Encoding()
 
-    for i in range(len(stop_info)):
-      #set up propositions for travel
-      location = stop_info[i]["location"]
-      drive[location] = Var('drive from ' + location)
-      transit[location] = Var('take transit from ' + location)
-      plane[location] = Var('take a plane from ' + location)
-      #set up other delay propositions
-      roadwork[location]= Var('roadwork happening on the path from ' + location)
-      accident[location] = Var('accident on the path from ' + location)
-      toll[location] = Var('tolls on the path from ' + location)
-      #set up weather propositions
-      sunny[location]= Var('sunny from ' + location)
-      rainy[location] = Var('rainy from ' + location)
-      snowstorm[location] = Var('snowstorm from ' + location)      
+    set_up_props()
 
     #loop through each stop and set appropriate constraints
     #note: we don't necessarily set it that proposition to true unless we know 100%
@@ -233,7 +270,7 @@ def example_theory():
       #constraint that it can't be true
       if "drive" not in entry["travel"].keys():
         E.add_constraint(~drive[location])
-      #if it would take more than 3 hours to drive to/from this trip, tolls 
+      #if it would take more than 3 hours to drive to/from this trip/the trip is international, tolls 
       #will be there
       else:
         if(entry["travel"]["drive"] > 3):
@@ -244,7 +281,7 @@ def example_theory():
         E.add_constraint(~transit[location])
       if "plane" not in entry["travel"].keys():
         E.add_constraint(~plane[location])
-
+      E.add_constraint(~international | toll[location])
       #at least one weather mode has to be true
       E.add_constraint(sunny[location] | rainy[location] | snowstorm[location])
 
@@ -303,9 +340,97 @@ def example_theory():
     #no documents means you can't cross the border
     E.add_constraint((international & documents) | ~international)
 
-    return E
+    return E    
 
-if __name__ == "__main__":
+def test_weather(stop_info):
+    """Tests weather constraints by adding more weather constraints to the list of extra test constraints
+    to be used with this run."""
+    extra_con = []
+    set_up_props()
+    for entry in stop_info:
+      location = entry["location"]
+      #ensure that a holiday and taking the train means that it is NOT sunny
+      extra_con.append(transit[location] & holiday)
+      #ensure that it is not a snowstorm so transit could always happen
+      extra_con.append(~snowstorm[location])
+      #the above two implies it will be rainy, which will imply accidents
+      #should fail the model due to a contradiction
+      extra_con.append(~accident[location])
+    return extra_con
+
+def test_affordability():
+    """Tests affordability constraints."""
+    extra_con = []
+    set_up_props()
+    for entry in stop_info:
+      location = entry["location"]
+      #force international to be true so there will be toll money
+      extra_con.append(international)
+      #force plane to be false
+      extra_con.append(~afford_plane)
+      #forced the driver to have no toll money
+      extra_con.append(~toll_money)
+      #(either transit will always be true or the model will fail). The below will fail the model.
+      extra_con.append(~transit[location])
+    return extra_con
+
+def test_travel():
+    """Tests travel constraints."""
+    extra_con = []
+    set_up_props()
+    for entry in stop_info:
+      location = entry["location"]
+      #force more than five people to take the trip (negates driving)
+      extra_con.append(more_than_five)
+
+      #force one of them to have COVID (cannot take a plane/travel internationally)
+      #if the user enters an international trip there should be 0 solutions.
+      #in other words, their only option in this scenario is to take transit domestically.
+      #negating transit gives us 0 solutions then, of course.
+      extra_con.append(virus)
+      extra_con.append(~transit[location])
+    return extra_con  
+
+def solve(border, is_urgent, test, extra_con=[]):
+    """Sets up and uses the SAT solver."""
+    #set up the solver
+    T = example_theory()
+    #account for international status/urgency
+    if(border):
+      T.add_constraint(international)
+      print("This trip is international...")
+    else:
+      T.add_constraint(~international)
+      print("This trip is not international...")
+
+    #add more constraints if the trip is urgent
+    if(is_urgent):
+      T.add_constraint(urgent_trip)
+    else:
+      T.add_constraint(~urgent_trip)
+
+    if test:
+      #add any extra constraints
+      if extra_con != []:
+        for constraint in extra_con:
+          T.add_constraint(constraint)
+
+    print("\nSatisfiable: %s" % T.is_satisfiable())
+    print("# Solutions: %d" % T.count_solutions())
+    print("   Solution: %s" % T.solve())
+
+def main():
+    """Runs the program."""
+
+    #ask the user if a test is being run
+    test = is_test()
+    #if it is a test, get any extra constraints from the user
+    if test:
+      type_of_test = decide_test()
+      
+    #will store extra constraints if a test is being run
+    extra_con = []
+
     #read in the databases (each database contains the city name and its 
     #longitude/latitude coordinate).
     canada = read_files("canada", "Canada Cities.csv")
@@ -326,16 +451,7 @@ if __name__ == "__main__":
     start_country = raw_location["starting country"]
     end_country = raw_location["ending country"]
 
-    #ask if the trip is urgent or not
-    choice = input("Is the trip urgent? (Y \ N)")
-    choice = choice.upper()
-    while(choice != "Y" and choice != "N"):
-      choice = input("Please enter a valid option.")
-      choice = choice.upper()
-    if(choice.upper() == "Y"):
-      is_urgent = True
-    else:
-      is_urgent = False
+    is_urgent = get_urgency()
 
     #calculate the total distance between the starting and ending city
     start_coord = (start_city["latitude"], start_city["longitude"])
@@ -459,31 +575,21 @@ if __name__ == "__main__":
       travel = {}
       urgent = {}
 
-    #set up the solver
-    T = example_theory()
-
     #determine if the travel is international or not and set the appropriate constraint
     border = get_international(start_country, end_country)
-    if(border):
-      T.add_constraint(international)
-      print("This trip is international...")
-    else:
-      T.add_constraint(~international)
-      print("This trip is not international...")
 
-    #add more constraints if the trip is urgent
-    if(is_urgent):
-      T.add_constraint(urgent_trip)
-    else:
-      T.add_constraint(~urgent_trip)
+    #add constraints for the appropriate test, if it is a test
+    if test:
+      if type_of_test == "w":
+         extra_con = test_weather(stop_info)
+      elif type_of_test == "a":
+        extra_con = test_affordability()
+      elif type_of_test == "t":
+        extra_con = test_travel()
 
-    print("\nSatisfiable: %s" % T.is_satisfiable())
-    print("# Solutions: %d" % T.count_solutions())
-    print("   Solution: %s" % T.solve())
+    #solve!
+    solve(border, is_urgent, test, extra_con)
 
-    """
-    print("\nVariable likelihoods:")
-    for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
-        print(" %s: %.2f" % (vn, T.likelihood(v)))
-    print()
-    """
+main()
+
+#if __name__ == "__main__":
