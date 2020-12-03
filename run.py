@@ -349,10 +349,10 @@ def test_weather(stop_info):
     set_up_props()
     for entry in stop_info:
       location = entry["location"]
-      #ensure that a holiday and taking the train means that it is NOT sunny
-      extra_con.append(transit[location] & holiday)
       #ensure that it is not a snowstorm so transit could always happen
       extra_con.append(~snowstorm[location])
+      #ensure that a holiday and taking the train means that it is NOT sunny
+      extra_con.append(transit[location] & holiday)
       #the above two implies it will be rainy, which will imply accidents
       #should fail the model due to a contradiction
       extra_con.append(~accident[location])
