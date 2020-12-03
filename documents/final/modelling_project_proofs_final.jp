@@ -138,34 +138,3 @@ FORMULAE
 IS
 SEQ ("∨ elim"[A,B,C\3,0,0]) (hyp[A\4]) (cut[B,C\1,0]) ("¬ elim"[B\3]) (hyp[A\3]) (hyp[A\2]) ("contra (constructive)"[B\0]) (hyp[A\1]) (hyp[A\0])
 END
-CONJECTUREPANEL Conjectures
-PROOF "F→¬D, F, D∨T∨P, (¬D∧(D∨T∨P))→(T∨P), H, S, (H∧S)→¬(T∨P) ⊢ ¬S"
-INFER F→¬D,
-     F,
-     D∨T∨P,
-     (¬D∧(D∨T∨P))→(T∨P),
-     H,
-     S,
-     (H∧S)→¬(T∨P)
-     ⊢ ¬S 
-FORMULAE
-0 ⊥,
-1 ¬S,
-2 ¬(T∨P),
-3 T∨P,
-4 ¬D∧(D∨T∨P),
-5 ¬D∧(D∨T∨P)→T∨P,
-6 D∨T∨P,
-7 ¬D,
-8 F,
-9 F→¬D,
-10 H∧S,
-11 H∧S→¬(T∨P),
-12 ¬(T∨P),
-13 S,
-14 H,
-15 (¬D∧(D∨T∨P))→(T∨P),
-16 (H∧S)→¬(T∨P)
-IS
-SEQ (cut[B,C\10,1]) ("∧ intro"[A,B\14,13]) (hyp[A\14]) (hyp[A\13]) (cut[B,C\12,1]) ("→ elim"[A,B\10,12]) (hyp[A\11]) (hyp[A\10]) (cut[B,C\7,1]) ("→ elim"[A,B\8,7]) (hyp[A\9]) (hyp[A\8]) (cut[B,C\4,1]) ("∧ intro"[A,B\7,6]) (hyp[A\7]) (hyp[A\6]) (cut[B,C\3,1]) ("→ elim"[A,B\4,3]) (hyp[A\5]) (hyp[A\4]) (cut[B,C\0,1]) ("¬ elim"[B\3]) (hyp[A\3]) (hyp[A\2]) ("contra (constructive)"[B\1]) (hyp[A\0])
-END
